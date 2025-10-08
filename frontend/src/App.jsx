@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import './App.css'
+import './components/auth.css'
+import LoginForm from './components/LoginForm'
+import RegisterForm from './components/RegisterForm'
 
 function App() {
   const [mode, setMode] = useState('login') // 'login' | 'register'
@@ -55,67 +58,33 @@ function App() {
           <h1 className="title">{mode === 'login' ? 'Log In' : 'Register'}</h1>
           <p className="subtitle">{mode === 'login' ? 'Sign in to continue to Social Fitness' : 'Create a new account'}</p>
 
-          <form onSubmit={handleSubmit} noValidate>
-            <label className="label">
-              <span className="label-text">Username</span>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className={`input ${errors.username ? 'input-error' : ''}`}
-                placeholder="Enter your username"
-                aria-invalid={errors.username ? 'true' : 'false'}
-              />
-              {errors.username && <div className="error">{errors.username}</div>}
-            </label>
-
-            {mode === 'register' && (
-              <label className="label">
-                <span className="label-text">Email</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`input ${errors.email ? 'input-error' : ''}`}
-                  placeholder="Enter your email"
-                  aria-invalid={errors.email ? 'true' : 'false'}
-                />
-                {errors.email && <div className="error">{errors.email}</div>}
-              </label>
-            )}
-
-            <label className="label">
-              <span className="label-text">Password</span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`input ${errors.password ? 'input-error' : ''}`}
-                placeholder="Enter your password"
-                aria-invalid={errors.password ? 'true' : 'false'}
-              />
-              {errors.password && <div className="error">{errors.password}</div>}
-            </label>
-
-            {mode === 'register' && (
-              <label className="label">
-                <span className="label-text">Confirm password</span>
-                <input
-                  type="password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  className={`input ${errors.confirm ? 'input-error' : ''}`}
-                  placeholder="Confirm your password"
-                  aria-invalid={errors.confirm ? 'true' : 'false'}
-                />
-                {errors.confirm && <div className="error">{errors.confirm}</div>}
-              </label>
-            )}
-
-            <button className="btn" type="submit" disabled={submitting}>
-              {submitting ? (mode === 'login' ? 'Signing in…' : 'Creating…') : (mode === 'login' ? 'Sign in' : 'Create account')}
-            </button>
-          </form>
+          {mode === 'login' ? (
+            <LoginForm
+              username={username}
+              password={password}
+              errors={errors}
+              onUsernameChange={setUsername}
+              onPasswordChange={setPassword}
+              onSubmit={handleSubmit}
+              submitting={submitting}
+            />
+          ) : (
+            <RegisterForm
+              username={username}
+              email={email}
+              password={password}
+              confirm={confirm}
+              errors={errors}
+              onChange={(field, value) => {
+                if (field === 'username') setUsername(value)
+                if (field === 'email') setEmail(value)
+                if (field === 'password') setPassword(value)
+                if (field === 'confirm') setConfirm(value)
+              }}
+              onSubmit={handleSubmit}
+              submitting={submitting}
+            />
+          )}
 
           {message && <div className="message">{message}</div>}
 
