@@ -9,35 +9,31 @@ cd C:\ruta\a\tu\proyecto\social-fitness
 # Descarregar i crear el backend
 curl https://start.spring.io/starter.zip -d dependencies=web,data-jpa,postgresql,security,validation -d type=maven-project -d language=java -d bootVersion=3.4.1 -d baseDir=backend -d groupId=com.example -d artifactId=backend -d name=backend -d packageName=com.example.backend -d javaVersion=17 -o backend.zip
 
-# Extreure
-Expand-Archive -Path backend.zip -DestinationPath . -Force
-Remove-Item backend.zip
+ 
 ```
 
 ## 2. Base de Dades PostgreSQL
 
 ```powershell
 # 1. Assegurar-se d'estar a l'arrel del projecte
-cd C:\ruta\a\tu\proyecto\social-fitness
+
 
 # 2. Crear directori per a PostgreSQL
-New-Item -ItemType Directory -Force -Path .\postgresql
+ 
 
 # 3. Descarregar PostgreSQL
 $url = "https://get.enterprisedb.com/postgresql/postgresql-16.4-1-windows-x64-binaries.zip"
 $output = ".\postgresql\postgresql.zip"
 Invoke-WebRequest -Uri $url -OutFile $output
 
-# 4. Extreure el ZIP
-Expand-Archive -Path $output -DestinationPath .\postgresql -Force
-
-# 5. Inicialitzar la base de dades (posar contrasenya quan ho demani)
+ 
+# 4. Inicialitzar la base de dades (posar contrasenya quan ho demani)
 .\postgresql\pgsql\bin\initdb.exe -D .\postgresql\data -U postgres -W
 
-# 6. Iniciar el servidor
+# 5. Iniciar el servidor
 .\postgresql\pgsql\bin\pg_ctl.exe -D .\postgresql\data start
 
-# 7. Crear la base de dades
+# 6. Crear la base de dades
 .\postgresql\pgsql\bin\psql.exe -U postgres -c "CREATE DATABASE socialfitness;"
 ```
 
