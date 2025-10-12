@@ -1,7 +1,7 @@
-# PostgreSQL (NO subir la base de datos)
+# PostgreSQL  
 postgresql/
 
-# Backend - Maven (archivos compilados)
+# Backend - Maven  
 backend/target/
 backend/.mvn/
 
@@ -9,17 +9,17 @@ backend/.mvn/
 *.log
 backend/logs/
 
-# IDE (configuraciones personales)
+# IDE  
 .vscode/
 .idea/
 *.iml
 *.iws
 
-# OS (archivos del sistema)
+# OS  
 .DS_Store
 Thumbs.db
 
-# Environment variables (contraseñas y secretos)
+# Environment variables  
 *.env
 .env.local
 **/application-local.properties
