@@ -1,0 +1,34 @@
+# PostgreSQL (NO subir la base de datos)
+postgresql/
+
+# Backend - Maven (archivos compilados)
+backend/target/
+backend/.mvn/
+
+# Logs
+*.log
+backend/logs/
+
+# IDE (configuraciones personales)
+.vscode/
+.idea/
+*.iml
+*.iws
+
+# OS (archivos del sistema)
+.DS_Store
+Thumbs.db
+
+# Environment variables (contraseñas y secretos)
+*.env
+.env.local
+**/application-local.properties
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Shell scripts output
+nohup.out
