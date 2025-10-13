@@ -36,3 +36,4 @@
 .footnote { margin-top: 1.25rem; font-size: 0.95rem; color: #64748b; text-align: center; }
 .message { margin-top: 1rem; color: #065f46; background: #ecfdf5; padding: 0.6rem 0.8rem; border-radius: 8px; }
 .link { background: none; border: none; color: #6d28d9; text-decoration: underline; cursor: pointer; font-weight: 600; }
+.general-error { margin-top: 1rem; color: #7f1d1d; background: #fff1f2; padding: 0.6rem 0.8rem; border-radius: 8px; }

@@ -1,0 +1,45 @@
+.profile-root {
+  padding: 3rem 2rem;
+  display: flex;
+  justify-content: center;
+}
+.profile-card {
+  width: 100%;
+  max-width: 960px;
+  background: linear-gradient(180deg,#ffffff,#fbfdff);
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 12px 40px rgba(16,24,40,0.06);
+}
+.profile-card h2 { text-align: center; margin-bottom: 0.25rem }
+.muted { text-align: center; color: #6b7280; margin-bottom: 1.25rem }
+
+.sports-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1rem 0 1.5rem 0;
+}
+.sport {
+  background: #fff; border: 1px solid #e6e9ee; padding: 1.25rem; border-radius: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; min-height: 72px;
+}
+.sport.active { border-color: #7c5cff; box-shadow: 0 6px 20px rgba(124,92,255,0.08); transform: translateY(-2px); }
+.sport-label { font-weight: 600; color: #0f172a }
+
+.actions { display:flex; gap:1rem; justify-content: center; margin-top: 1.5rem }
+.btn-primary { background: linear-gradient(180deg,#7c5cff,#6b46c1); color: white; padding: 0.7rem 1rem; border-radius:8px; border:none; cursor:pointer }
+.btn-ghost { background: transparent; border:1px solid #e6e9ee; padding:0.6rem 0.9rem; border-radius:8px; cursor:pointer }
+
+.levels { display:flex; flex-direction: column; gap: 1.5rem }
+.sport-level h3 { margin: 0 0 0.5rem 0; }
+.level-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem }
+.level { background:#fff; border:1px solid #e6e9ee; padding:0.9rem; border-radius:10px; text-align:left; cursor:pointer }
+.level .level-title { font-weight:700 }
+.level .level-desc { font-size:0.9rem; color:#6b7280 }
+.level.active { border-color:#7c5cff; box-shadow:0 6px 20px rgba(124,92,255,0.08); transform: translateY(-2px)}
+
+@media (max-width: 720px) {
+  .sports-grid { grid-template-columns: repeat(2, 1fr); }
+  .level-grid { grid-template-columns: 1fr; }
+}
