@@ -14,3 +14,24 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Project scope
+
+This folder is the frontend (client) for the Social Fitness project. It contains only the UI and static client-side code. It is not a full-stack application — you'll need a separate backend service for authentication, data storage, and APIs.
+
+How to run locally:
+
+1. Install dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+2. Start the dev server:
+
+```bash
+npm run dev
+```
+
+The app will be served by Vite (usually at http://localhost:5173). For production, build with `npm run build` and deploy the `dist/` folder to a static host or a CDN.
