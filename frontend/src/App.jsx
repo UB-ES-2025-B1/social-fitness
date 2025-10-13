@@ -3,9 +3,15 @@ import './App.css'
 import './components/auth.css'
 import LoginForm from './components/LoginForm'
 import RegisterForm from './components/RegisterForm'
+import * as auth from './services/auth'
+import ProfileConfigurator from './components/ProfileConfigurator'
+import * as profileService from './services/profile'
 
 function App() {
-  const [mode, setMode] = useState('login') // 'login' | 'register'
+  // Dev helper: add ?dev=profile to the URL to jump straight to the profile configurator while developing
+  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+  const startMode = urlParams && urlParams.get('dev') === 'profile' ? 'profile' : 'login'
+  const [mode, setMode] = useState(startMode) // 'login' | 'register' | 'profile'
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,20 +41,52 @@ function App() {
 
   function handleSubmit(e) {
     e.preventDefault()
+    console.log('handleSubmit', { mode, username, email })
     setMessage('')
     const v = mode === 'login' ? validateLogin() : validateRegister()
     setErrors(v)
     if (Object.keys(v).length > 0) return
     setSubmitting(true)
-    // Fake async auth
-    setTimeout(() => {
-      setSubmitting(false)
-      setMessage(mode === 'login' ? 'Login successful (demo)' : 'Registered successfully (demo)')
-      setUsername('')
-      setEmail('')
-      setPassword('')
-      setConfirm('')
-    }, 900)
+  // Call the backend auth API (login or register) — this returns a normalized { ok, status, data } result
+    ;(async () => {
+      try {
+        const payload = mode === 'login'
+          ? { username, password }
+          : { username, email, password }
+
+        const res = mode === 'login'
+          ? await auth.login(payload)
+          : await auth.register(payload)
+
+  console.log('auth response', res)
+  if (!res.ok) {
+          // We expect the server to return field-level errors in `errors` or a general message in `message`.
+          // That lets the UI show inline feedback for fields or a general banner for other errors.
+          if (res.data && res.data.errors) {
+            setErrors(res.data.errors)
+          } else if (res.data && res.data.message) {
+            setErrors({ general: res.data.message })
+          } else {
+            setErrors({ general: `Request failed (${res.status})` })
+          }
+        } else {
+          if (mode === 'register') {
+            // Registration succeeded — show the profile configurator so the user can pick sports/levels
+            setMode('profile')
+          } else {
+            setMessage('Login successful')
+          }
+          setUsername('')
+          setEmail('')
+          setPassword('')
+          setConfirm('')
+        }
+      } catch (err) {
+        setErrors({ general: 'Network error — please try again' })
+      } finally {
+        setSubmitting(false)
+      }
+    })()
   }
 
   return (
@@ -57,8 +95,17 @@ function App() {
         <div className="login-card large" role="region" aria-label={`${mode} form`}>
           <h1 className="title">{mode === 'login' ? 'Log In' : 'Register'}</h1>
           <p className="subtitle">{mode === 'login' ? 'Sign in to continue to Social Fitness' : 'Create a new account'}</p>
-
-          {mode === 'login' ? (
+          {mode === 'profile' ? (
+            <ProfileConfigurator onComplete={async (payload) => {
+              // In a full app we'd show a loading indicator and handle errors more thoroughly here
+              const res = await profileService.saveProfile({ sports: payload })
+              if (res.ok) {
+                setMessage('Profile saved successfully')
+              } else {
+                setErrors({ general: 'Failed to save profile' })
+              }
+            }} />
+          ) : mode === 'login' ? (
             <LoginForm
               username={username}
               password={password}
@@ -86,6 +133,7 @@ function App() {
             />
           )}
 
+          {errors.general && <div className="general-error">{errors.general}</div>}
           {message && <div className="message">{message}</div>}
 
           <p className="footnote">
