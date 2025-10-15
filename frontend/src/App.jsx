@@ -5,13 +5,15 @@ import LoginForm from './components/LoginForm'
 import RegisterForm from './components/RegisterForm'
 import * as auth from './services/auth'
 import ProfileConfigurator from './components/ProfileConfigurator'
+import EventExplorer from './components/EventExplorer'
 import * as profileService from './services/profile'
 
 function App() {
-  // Dev helper: add ?dev=profile to the URL to jump straight to the profile configurator while developing
+  // Dev helper: add ?dev=profile or ?dev=explore to the URL to jump straight to a view while developing
   const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-  const startMode = urlParams && urlParams.get('dev') === 'profile' ? 'profile' : 'login'
-  const [mode, setMode] = useState(startMode) // 'login' | 'register' | 'profile'
+  const devParam = urlParams ? urlParams.get('dev') : null
+  const startMode = devParam === 'profile' || devParam === 'explore' ? devParam : 'login'
+  const [mode, setMode] = useState(startMode) // 'login' | 'register' | 'profile' | 'explore'
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -105,6 +107,8 @@ function App() {
                 setErrors({ general: 'Failed to save profile' })
               }
             }} />
+          ) : mode === 'explore' ? (
+            <EventExplorer />
           ) : mode === 'login' ? (
             <LoginForm
               username={username}
