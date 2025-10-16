@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.backend.dto.LoginRequest;
 import com.example.backend.dto.RegisterRequest;
 import com.example.backend.dto.UserResponse;
 import com.example.backend.service.AuthService;
@@ -26,5 +27,13 @@ public class AuthController {
     UserResponse user = authService.register(body);
     // contrato: 201 { "user": {...} }
     return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("user", user));
+  }
+
+  @PostMapping("/login")
+  public ResponseEntity<?> login(@Valid @RequestBody LoginRequest body) {
+    // Aquí, authService.login podría devolver un token o una respuesta
+    String loginResponse = authService.login(body);
+    // contrato: 200 { "message": "Login successful" }
+    return ResponseEntity.ok(Map.of("message", loginResponse));
   }
 }
