@@ -138,3 +138,17 @@ Es visualitza un formulari per defecte de Spring Security.
 # Accedir a la base de dades
 .\postgresql\pgsql\bin\psql.exe -U postgres -d socialfitness
 ```
+
+### Iniciar base de dades i backend
+
+```
+.\postgresql\pgsql\data start
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+### Per aturar 
+Ctl+C
+```
+.\postgresql\pgsql\data stop
+```
