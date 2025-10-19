@@ -20,8 +20,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults()) // activar CORS
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()  
-                .anyRequest().authenticated() 
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/profile", "/profile/**").permitAll()
+                .anyRequest().authenticated()
             );
         return http.build();
     }
