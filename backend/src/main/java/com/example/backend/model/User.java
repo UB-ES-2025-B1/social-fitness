@@ -1,6 +1,11 @@
 package com.example.backend.model;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @Table(name = "users",
@@ -9,7 +14,7 @@ import jakarta.persistence.*;
     @UniqueConstraint(columnNames = "email")
   }
 )
-public class User {
+public class User implements UserDetails {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,4 +46,30 @@ public class User {
   public void setUsername(String username) { this.username = username; }
   public void setEmail(String email) { this.email = email; }
   public void setPassword(String password) { this.password = password; }
+
+  // Métodos requeridos por UserDetails
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return Collections.emptyList(); 
+  }
+
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 }
