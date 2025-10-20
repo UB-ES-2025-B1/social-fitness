@@ -1,7 +1,13 @@
 const API_BASE = import.meta.env.VITE_API_BASE || ''
 
+console.log('[API] VITE_API_BASE =', import.meta.env.VITE_API_BASE);
+console.log('[API] API_BASE =', API_BASE);
+
+
 async function request(path, { method = 'GET', body, headers = {}, credentials = 'include' } = {}) {
   const url = API_BASE + path
+  console.log(`[API] ${method} ->`, url); 
+
   const opts = {
     method,
     headers: {
