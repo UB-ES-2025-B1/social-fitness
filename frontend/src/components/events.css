@@ -44,3 +44,29 @@
 
 .muted { color: #888 }
 .general-error { color: #b00020 }
+
+/* Modal basics */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index: 50 }
+.modal-card { width: min(820px, 92vw); background:#fff; border-radius: 12px; padding: 20px 20px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2) }
+.modal-header { display:flex; align-items:center; justify-content: space-between; margin-bottom: 12px }
+.modal-header h3 { margin: 0; font-size: 20px }
+.btn-icon { background: transparent; border: 0; font-size: 22px; line-height: 1; cursor: pointer; color: #333 }
+.modal-body { display:flex; flex-direction: column; gap: 16px }
+.modal-actions { display:flex; gap: 12px; justify-content: space-between; margin-top: 10px }
+
+/* Form controls used in modal */
+.field { display:flex; flex-direction: column; gap: 8px }
+.label { font-weight: 600 }
+.help { color:#666; font-size: 13px; margin-bottom: 6px }
+.input { padding: 10px 12px; border: 1px solid #eee; background: #f6f6f6; border-radius: 8px }
+
+.chip-row { display:flex; gap: 10px; flex-wrap: wrap }
+.chip { padding: 8px 12px; border-radius: 18px; border: 1px solid #e6e6e6; background: #fff; cursor: pointer }
+.chip.active { background: #0b0b18; color: #fff; border-color: #0b0b18 }
+
+.days { display:flex; gap: 18px }
+.day { width:44px; height:44px; border-radius: 50%; border: 1px solid #e6e6e6; display:flex; align-items:center; justify-content:center; background:#fff; cursor:pointer; font-weight:600 }
+.day.active { background:#0b0b18; color:#fff; border-color:#0b0b18 }
+
+.time-row { display:flex; gap: 16px }
+.time-col { flex: 1 }

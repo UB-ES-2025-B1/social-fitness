@@ -1,11 +1,42 @@
 import React, { useEffect, useState } from 'react'
 import '../components/events.css'
 import { listEvents, joinEvent } from '../services/events'
+import EventFilterModal from './EventFilterModal'
+
+const DEV_USE_SAMPLE = (import.meta.env.VITE_API_BASE || '') === ''
+const SAMPLE_EVENTS = [
+  {
+    id: 'e1',
+    title: 'Partido amistoso en el parque',
+    sport: 'Fútbol',
+    date: 'mié, 8 oct',
+    time: '18:00',
+    location: 'Parque Central',
+    organizer: 'Carlos M.',
+    participants: 8,
+    capacity: 22,
+    price: 5,
+    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1000&auto=format&fit=crop'
+  },
+  {
+    id: 'e2',
+    title: 'Torneo 3vs3',
+    sport: 'Básquet',
+    date: 'jue, 9 oct',
+    time: '16:30',
+    location: 'Pista Municipal',
+    organizer: 'Ana S.',
+    participants: 6,
+    capacity: 12,
+    price: 8,
+    image: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=1000&auto=format&fit=crop'
+  }
+]
 
 function EventCard({ ev, onJoin }) {
   return (
     <article className="event-card">
-      <div className="event-image" style={{ backgroundImage: `url(${ev.image || '/public/placeholder.jpg'})` }} />
+  <div className="event-image" style={{ backgroundImage: `url(${ev.image || '/placeholder.jpg'})` }} />
       <div className="event-body">
         <div className="event-row">
           <span className="event-tag">{ev.sport}</span>
@@ -28,19 +59,36 @@ function EventCard({ ev, onJoin }) {
 
 export default function EventExplorer() {
   const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState({ sports: [], location: '', days: [], timeFrom: '', timeTo: '' })
+  const [showFilters, setShowFilters] = useState(false)
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  async function load(q = '') {
+  async function load(q = query, f = filters) {
     setLoading(true)
     setError(null)
     try {
-      const res = await listEvents({ q })
-      if (res.ok) setEvents(res.data || [])
-      else setError('Failed to load events')
+      const res = await listEvents({ q, ...f })
+      if (res.ok) {
+        let items
+        const d = res.data
+        if (Array.isArray(d)) items = d
+        else if (Array.isArray(d?.events)) items = d.events
+        else if (Array.isArray(d?.items)) items = d.items
+        else items = []
+
+        if (items.length === 0 && DEV_USE_SAMPLE) {
+          items = SAMPLE_EVENTS
+        }
+        setEvents(items)
+      } else {
+        if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS)
+        else setError('Failed to load events')
+      }
     } catch (err) {
-      setError('Network error')
+      if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS)
+      else setError('Network error')
     } finally {
       setLoading(false)
     }
@@ -69,7 +117,7 @@ export default function EventExplorer() {
       </header>
 
       <main className="explorer-list">
-        <button className="filter-toggle btn-ghost">Filtrar resultados</button>
+        <button className="filter-toggle btn-ghost" onClick={() => setShowFilters(true)}>Filtrar resultados</button>
 
         {loading && <div className="muted">Cargando...</div>}
         {error && <div className="general-error">{error}</div>}
@@ -80,6 +128,14 @@ export default function EventExplorer() {
 
         {!loading && events.length === 0 && <div className="muted">No hay eventos</div>}
       </main>
+
+      <EventFilterModal
+        open={showFilters}
+        initialFilters={filters}
+        onClose={() => setShowFilters(false)}
+        onClear={() => { setFilters({ sports: [], location: '', days: [], timeFrom: '', timeTo: '' }); setShowFilters(false); load('',{ sports: [], location: '', days: [], timeFrom: '', timeTo: '' }) }}
+        onApply={(f) => { setFilters(f); setShowFilters(false); load(query, f) }}
+      />
     </div>
   )
 }

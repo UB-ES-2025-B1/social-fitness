@@ -95,8 +95,12 @@ function App() {
     <div className="app-root">
       <main className="login-wrapper">
         <div className="login-card large" role="region" aria-label={`${mode} form`}>
-          <h1 className="title">{mode === 'login' ? 'Log In' : 'Register'}</h1>
-          <p className="subtitle">{mode === 'login' ? 'Sign in to continue to Social Fitness' : 'Create a new account'}</p>
+          {mode !== 'explore' && (
+            <>
+              <h1 className="title">{mode === 'login' ? 'Log In' : 'Register'}</h1>
+              <p className="subtitle">{mode === 'login' ? 'Sign in to continue to Social Fitness' : 'Create a new account'}</p>
+            </>
+          )}
           {mode === 'profile' ? (
             <ProfileConfigurator onComplete={async (payload) => {
               // In a full app we'd show a loading indicator and handle errors more thoroughly here
@@ -140,13 +144,15 @@ function App() {
           {errors.general && <div className="general-error">{errors.general}</div>}
           {message && <div className="message">{message}</div>}
 
-          <p className="footnote">
-            {mode === 'login' ? (
-              <>Don’t have an account? <button className="link" onClick={() => { setMode('register'); setMessage(''); setErrors({}); }}>Register</button></>
-            ) : (
-              <>Already have an account? <button className="link" onClick={() => { setMode('login'); setMessage(''); setErrors({}); }}>Log in</button></>
-            )}
-          </p>
+          {mode !== 'explore' && (
+            <p className="footnote">
+              {mode === 'login' ? (
+                <>Don’t have an account? <button className="link" onClick={() => { setMode('register'); setMessage(''); setErrors({}); }}>Register</button></>
+              ) : (
+                <>Already have an account? <button className="link" onClick={() => { setMode('login'); setMessage(''); setErrors({}); }}>Log in</button></>
+              )}
+            </p>
+          )}
         </div>
       </main>
     </div>

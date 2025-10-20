@@ -81,8 +81,11 @@ Profile endpoint
   - Description: Returns a list of public events. Supports optional query parameters for searching and filtering.
   - Query parameters:
     - q: string - free text search against title, sport, and location (optional)
-    - sport: string - filter by sport id (optional)
-    - date: string - ISO date or date range (optional)
+    - sports: string - comma-separated sport names/ids matching UI chips (e.g. "Fútbol,Básquet")
+    - location: string - free text location filter
+    - days: string - comma-separated day ids from {mon,tue,wed,thu,fri,sat,sun}
+    - timeFrom: string - HH:mm lower bound (24h)
+    - timeTo: string - HH:mm upper bound (24h)
   - Successful response (200):
     [
       {
