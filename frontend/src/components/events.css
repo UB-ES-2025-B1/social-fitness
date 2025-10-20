@@ -1,0 +1,72 @@
+.explorer-root {
+  padding: 20px;
+}
+
+.explorer-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 auto 18px;
+}
+
+.explorer-header h2 { margin: 0; text-align: center }
+
+.search-row { display: flex; gap: 8px }
+.search-row input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #eee; background: #f6f6f6 }
+
+.explorer-list { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px }
+
+.filter-toggle { align-self: flex-start }
+
+.event-card {
+  display: grid;
+  grid-template-columns: 160px 1fr 140px;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 12px;
+  align-items: center;
+}
+
+.event-image { width: 160px; height: 100px; background-size: cover; background-position: center; border-radius: 8px }
+
+.event-body { display: flex; flex-direction: column; gap: 8px }
+.event-row { display: flex; justify-content: space-between; align-items: center }
+.event-tag { background: #e6fff3; color: #007a43; padding: 6px 10px; border-radius: 12px; font-size: 13px }
+.event-price { font-weight: 600 }
+.event-title { margin: 0 }
+.event-meta .muted { color: #666; font-size: 13px }
+.event-actions { display:flex; justify-content:center }
+.event-actions .btn-primary { padding: 10px 18px }
+
+.muted { color: #888 }
+.general-error { color: #b00020 }
+
+/* Modal basics */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index: 50 }
+.modal-card { width: min(820px, 92vw); background:#fff; border-radius: 12px; padding: 20px 20px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2) }
+.modal-header { display:flex; align-items:center; justify-content: space-between; margin-bottom: 12px }
+.modal-header h3 { margin: 0; font-size: 20px }
+.btn-icon { background: transparent; border: 0; font-size: 22px; line-height: 1; cursor: pointer; color: #333 }
+.modal-body { display:flex; flex-direction: column; gap: 16px }
+.modal-actions { display:flex; gap: 12px; justify-content: space-between; margin-top: 10px }
+
+/* Form controls used in modal */
+.field { display:flex; flex-direction: column; gap: 8px }
+.label { font-weight: 600 }
+.help { color:#666; font-size: 13px; margin-bottom: 6px }
+.input { padding: 10px 12px; border: 1px solid #eee; background: #f6f6f6; border-radius: 8px }
+
+.chip-row { display:flex; gap: 10px; flex-wrap: wrap }
+.chip { padding: 8px 12px; border-radius: 18px; border: 1px solid #e6e6e6; background: #fff; cursor: pointer }
+.chip.active { background: #0b0b18; color: #fff; border-color: #0b0b18 }
+
+.days { display:flex; gap: 18px }
+.day { width:44px; height:44px; border-radius: 50%; border: 1px solid #e6e6e6; display:flex; align-items:center; justify-content:center; background:#fff; cursor:pointer; font-weight:600 }
+.day.active { background:#0b0b18; color:#fff; border-color:#0b0b18 }
+
+.time-row { display:flex; gap: 16px }
+.time-col { flex: 1 }

@@ -75,3 +75,58 @@ Profile endpoint
 - Error response (400):
   { "message": "Validation failed", "errors": { "sports": "Select at least one sport" } }
 
+  Events endpoints
+
+  4) GET /events
+  - Description: Returns a list of public events. Supports optional query parameters for searching and filtering.
+  - Query parameters:
+    - q: string - free text search against title, sport, and location (optional)
+    - sports: string - comma-separated sport names/ids matching UI chips (e.g. "Fútbol,Básquet")
+    - location: string - free text location filter
+    - days: string - comma-separated day ids from {mon,tue,wed,thu,fri,sat,sun}
+    - timeFrom: string - HH:mm lower bound (24h)
+    - timeTo: string - HH:mm upper bound (24h)
+  - Successful response (200):
+    [
+      {
+        "id": "string",
+        "title": "string",
+        "sport": "string",
+        "date": "short date string",
+        "time": "HH:MM",
+        "location": "string",
+        "organizer": "string",
+        "participants": 8,
+        "capacity": 22,
+        "price": 5,
+        "image": "optional image URL"
+      }
+    ]
+
+  5) GET /events/:id
+  - Description: Return details for a single event
+  - Successful response (200):
+    {
+      "id": "string",
+      "title": "string",
+      "sport": "string",
+      "date": "2023-10-08",
+      "time": "18:00",
+      "location": "string",
+      "description": "string",
+      "organizer": { "id": "", "name": "" },
+      "participants": [ { "id": "", "name": "" } ],
+      "capacity": 22,
+      "price": 5,
+      "image": "url"
+    }
+
+  6) POST /events/:id/join
+  - Description: Join the event as the currently authenticated user. Uses the same authentication method described above (cookie or token).
+  - Request body: none
+  - Successful response (200):
+    { "message": "Joined" }
+  - Error responses:
+    - 400: { "message": "Event full" }
+    - 401: { "message": "Authentication required" }
+

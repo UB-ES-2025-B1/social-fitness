@@ -5,13 +5,15 @@ import LoginForm from './components/LoginForm'
 import RegisterForm from './components/RegisterForm'
 import * as auth from './services/auth'
 import ProfileConfigurator from './components/ProfileConfigurator'
+import EventExplorer from './components/EventExplorer'
 import * as profileService from './services/profile'
 
 function App() {
-  // Dev helper: add ?dev=profile to the URL to jump straight to the profile configurator while developing
+  // Dev helper: add ?dev=profile or ?dev=explore to the URL to jump straight to a view while developing
   const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-  const startMode = urlParams && urlParams.get('dev') === 'profile' ? 'profile' : 'login'
-  const [mode, setMode] = useState(startMode) // 'login' | 'register' | 'profile'
+  const devParam = urlParams ? urlParams.get('dev') : null
+  const startMode = devParam === 'profile' || devParam === 'explore' ? devParam : 'login'
+  const [mode, setMode] = useState(startMode) // 'login' | 'register' | 'profile' | 'explore'
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -93,8 +95,12 @@ function App() {
     <div className="app-root">
       <main className="login-wrapper">
         <div className="login-card large" role="region" aria-label={`${mode} form`}>
-          <h1 className="title">{mode === 'login' ? 'Log In' : 'Register'}</h1>
-          <p className="subtitle">{mode === 'login' ? 'Sign in to continue to Social Fitness' : 'Create a new account'}</p>
+          {mode !== 'explore' && (
+            <>
+              <h1 className="title">{mode === 'login' ? 'Log In' : 'Register'}</h1>
+              <p className="subtitle">{mode === 'login' ? 'Sign in to continue to Social Fitness' : 'Create a new account'}</p>
+            </>
+          )}
           {mode === 'profile' ? (
             <ProfileConfigurator onComplete={async (payload) => {
               // In a full app we'd show a loading indicator and handle errors more thoroughly here
@@ -105,6 +111,8 @@ function App() {
                 setErrors({ general: 'Failed to save profile' })
               }
             }} />
+          ) : mode === 'explore' ? (
+            <EventExplorer />
           ) : mode === 'login' ? (
             <LoginForm
               username={username}
@@ -136,13 +144,15 @@ function App() {
           {errors.general && <div className="general-error">{errors.general}</div>}
           {message && <div className="message">{message}</div>}
 
-          <p className="footnote">
-            {mode === 'login' ? (
-              <>Don’t have an account? <button className="link" onClick={() => { setMode('register'); setMessage(''); setErrors({}); }}>Register</button></>
-            ) : (
-              <>Already have an account? <button className="link" onClick={() => { setMode('login'); setMessage(''); setErrors({}); }}>Log in</button></>
-            )}
-          </p>
+          {mode !== 'explore' && (
+            <p className="footnote">
+              {mode === 'login' ? (
+                <>Don’t have an account? <button className="link" onClick={() => { setMode('register'); setMessage(''); setErrors({}); }}>Register</button></>
+              ) : (
+                <>Already have an account? <button className="link" onClick={() => { setMode('login'); setMessage(''); setErrors({}); }}>Log in</button></>
+              )}
+            </p>
+          )}
         </div>
       </main>
     </div>
