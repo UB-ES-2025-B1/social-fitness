@@ -22,7 +22,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/profile", "/profile/**").permitAll()
+                .requestMatchers("/events", "/events/**").permitAll() 
                 .anyRequest().authenticated()
+                
             );
         return http.build();
     }

@@ -45,4 +45,16 @@ public class GlobalExceptionHandler {
       "errors", Map.of("username", "Username already taken")
     ));
   }
+
+
+  @ExceptionHandler(java.util.NoSuchElementException.class)
+  public ResponseEntity<?> handleNotFound(RuntimeException ex) {
+    return ResponseEntity.status(404).body(Map.of("message", "Not found"));
+  }
+
+  @ExceptionHandler(com.example.backend.service.EventService.EventFullException.class)
+  public ResponseEntity<?> handleEventFull() {
+    return ResponseEntity.badRequest().body(Map.of("message", "Event full"));
+  }
+
 }
