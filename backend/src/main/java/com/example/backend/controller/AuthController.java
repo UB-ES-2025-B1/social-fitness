@@ -29,11 +29,9 @@ public class AuthController {
     return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("user", user));
   }
 
-  @PostMapping("/login")
+@PostMapping("/login")
   public ResponseEntity<?> login(@Valid @RequestBody LoginRequest body) {
-    // Aquí, authService.login podría devolver un token o una respuesta
-    String loginResponse = authService.login(body);
-    // contrato: 200 { "message": "Login successful" }
-    return ResponseEntity.ok(Map.of("message", loginResponse));
+      UserResponse user = authService.login(body);
+      return ResponseEntity.ok(Map.of("user", user, "message", "Login successful"));
   }
 }

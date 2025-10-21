@@ -3,9 +3,11 @@ package com.example.backend.service;
 import java.util.Map;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -46,16 +48,25 @@ public class AuthService {
     return new UserResponse(saved.getId().toString(), saved.getUsername(), saved.getEmail());
   }
 
-  public String login(LoginRequest req) {
+public UserResponse login(LoginRequest req) {
     try {
-      Authentication authentication = authenticationManager.authenticate(
-          new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
+      authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
       );
 
-      // la autenticación es correcta
-      return "Login successful: " + authentication.getName();
+      // Buscar el usuario en la base de datos
+      User user = userRepository.findByUsername(req.getUsername())
+          .orElseThrow(() -> new ValidationException(Map.of("username", "User not found")));
+
+      return new UserResponse(user.getId().toString(), user.getUsername(), user.getEmail());
+
+    } catch (BadCredentialsException e) {
+      throw new ValidationException(Map.of("password", "Invalid password"));
+    } catch (UsernameNotFoundException e) {
+      throw new ValidationException(Map.of("username", "User not found"));
     } catch (AuthenticationException e) {
-      throw new AuthenticationException("Invalid credentials") {};
+      // Cualquier otro error de autenticación
+      throw new ValidationException(Map.of("general", "Invalid credentials"));
     }
   }
 
