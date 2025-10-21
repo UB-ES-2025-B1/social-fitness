@@ -16,7 +16,7 @@ const SAMPLE_EVENTS = [
     participants: 8,
     capacity: 22,
     price: 5,
-    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1000&auto=format&fit=crop'
+    image: ''
   },
   {
     id: 'e2',
@@ -29,14 +29,57 @@ const SAMPLE_EVENTS = [
     participants: 6,
     capacity: 12,
     price: 8,
-    image: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=1000&auto=format&fit=crop'
+    image: ''
   }
 ]
+
+// Local images per sport. Primary points to JPG you can drop in /public/img/sports/,
+// and fallback points to SVGs already included in the repo.
+const LOCAL_SPORT_IMAGES_PRIMARY = {
+  futbol: '/img/sports/football.jpg',
+  basquet: '/img/sports/basketball.jpg',
+  tenis: '/img/sports/tennis.jpg',
+  running: '/img/sports/running.jpg',
+  natacion: '/img/sports/swimming.jpg',
+  volleyball: '/img/sports/volleyball.jpg'
+}
+
+const LOCAL_SPORT_IMAGES_FALLBACK = {
+  futbol: '/img/sports/football.svg',
+  basquet: '/img/sports/basketball.svg',
+  tenis: '/img/sports/tennis.svg',
+  running: '/img/sports/running.svg',
+  natacion: '/img/sports/swimming.svg',
+  volleyball: '/img/sports/volleyball.svg'
+}
+
+const LOCAL_GENERIC_IMAGE = '/img/sports/football.svg'
+
+function normalizeSport(name = '') {
+  return name
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove accents (broadly supported)
+    .replace(/\s+/g, ' ') // collapse spaces
+    .trim()
+}
+
+function withDefaultSportImage(ev) {
+  const provided = ev?.image && String(ev.image).trim().length > 0 ? String(ev.image).trim() : ''
+  const key = normalizeSport(ev?.sport)
+  const primaryLocal = LOCAL_SPORT_IMAGES_PRIMARY[key]
+  const fallbackLocal = LOCAL_SPORT_IMAGES_FALLBACK[key] || LOCAL_GENERIC_IMAGE
+  const primary = provided || primaryLocal || fallbackLocal
+  return { ...ev, imagePrimary: primary, imageFallback: fallbackLocal }
+}
 
 function EventCard({ ev, onJoin }) {
   return (
     <article className="event-card">
-  <div className="event-image" style={{ backgroundImage: `url(${ev.image || '/placeholder.jpg'})` }} />
+      <div className="event-image">
+        <img className="event-image-img" src={ev.imagePrimary} alt={`${ev.sport} event`} onError={(e) => { e.currentTarget.src = ev.imageFallback }} />
+      </div>
       <div className="event-body">
         <div className="event-row">
           <span className="event-tag">{ev.sport}</span>
@@ -81,13 +124,14 @@ export default function EventExplorer() {
         if (items.length === 0 && DEV_USE_SAMPLE) {
           items = SAMPLE_EVENTS
         }
-        setEvents(items)
+        // Ensure an image is always present, pick by sport if missing
+        setEvents(items.map(withDefaultSportImage))
       } else {
-        if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS)
+        if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS.map(withDefaultSportImage))
         else setError('Failed to load events')
       }
     } catch (err) {
-      if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS)
+      if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS.map(withDefaultSportImage))
       else setError('Network error')
     } finally {
       setLoading(false)
