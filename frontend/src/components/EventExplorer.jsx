@@ -33,8 +33,7 @@ const SAMPLE_EVENTS = [
   }
 ]
 
-// Local images per sport. Primary points to JPG you can drop in /public/img/sports/,
-// and fallback points to SVGs already included in the repo.
+// Local sport images. Primary uses JPGs in /public/img/sports; fallback uses bundled SVGs.
 const LOCAL_SPORT_IMAGES_PRIMARY = {
   futbol: '/img/sports/football.jpg',
   basquet: '/img/sports/basketball.jpg',
@@ -60,8 +59,8 @@ function normalizeSport(name = '') {
     .toString()
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // remove accents (broadly supported)
-    .replace(/\s+/g, ' ') // collapse spaces
+  .replace(/[\u0300-\u036f]/g, '') // remove accents
+  .replace(/\s+/g, ' ') // collapse spaces
     .trim()
 }
 
@@ -124,7 +123,7 @@ export default function EventExplorer() {
         if (items.length === 0 && DEV_USE_SAMPLE) {
           items = SAMPLE_EVENTS
         }
-        // Ensure an image is always present, pick by sport if missing
+  // Ensure each card has an image; fall back by sport if missing
         setEvents(items.map(withDefaultSportImage))
       } else {
         if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS.map(withDefaultSportImage))
@@ -143,7 +142,7 @@ export default function EventExplorer() {
   async function handleJoin(id) {
     const res = await joinEvent(id)
     if (res.ok) {
-      // optimistic: reload list
+  // Reload the list after joining (optimistic)
       load(query)
     } else {
       alert('No s\u2019ha pogut unir a lâ€™esdeveniment')
