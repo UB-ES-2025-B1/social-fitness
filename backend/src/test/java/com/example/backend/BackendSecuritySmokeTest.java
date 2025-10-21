@@ -21,11 +21,4 @@ class BackendSecuritySmokeTest {
     mvc.perform(get("/"))
        .andExpect(status().isNotFound());
   }
-
-  @Disabled("Activar cuando haya un GET protegido (p.ej. /me) y se endurezca Security")
-  @Test
-  void protectedEndpoint_shouldReturn401_withoutAuth() throws Exception {
-    mvc.perform(get("/me"))
-       .andExpect(status().isUnauthorized());
-  }
 }
