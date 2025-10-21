@@ -1,4 +1,4 @@
 import '@testing-library/jest-dom';
 
-// Mock fetch por defecto (lo puedes sobreescribir en cada test)
+// Mock de fetch por defecto (se puede sobreescribir en cada test)
 import 'whatwg-fetch';

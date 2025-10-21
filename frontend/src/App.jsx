@@ -9,11 +9,11 @@ import EventExplorer from './components/EventExplorer'
 import * as profileService from './services/profile'
 
 function App() {
-  // Dev helper: add ?dev=profile or ?dev=explore to the URL to jump straight to a view while developing
+  // Dev shortcut: add ?dev=profile or ?dev=explore in the URL to open a view directly during development
   const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
   const devParam = urlParams ? urlParams.get('dev') : null
   const startMode = devParam === 'profile' || devParam === 'explore' ? devParam : 'login'
-  const [mode, setMode] = useState(startMode) // 'login' | 'register' | 'profile' | 'explore'
+  const [mode, setMode] = useState(startMode) // one of: 'login' | 'register' | 'profile' | 'explore'
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -49,7 +49,7 @@ function App() {
     setErrors(v)
     if (Object.keys(v).length > 0) return
     setSubmitting(true)
-  // Call the backend auth API (login or register) — this returns a normalized { ok, status, data } result
+  // Call auth API (login or register). Returns a normalized { ok, status, data } shape
     ;(async () => {
       try {
         const payload = mode === 'login'
@@ -62,8 +62,8 @@ function App() {
 
   console.log('auth response', res)
   if (!res.ok) {
-          // We expect the server to return field-level errors in `errors` or a general message in `message`.
-          // That lets the UI show inline feedback for fields or a general banner for other errors.
+          // The server returns field errors in `errors` or a general message in `message`.
+          // The UI shows field errors inline and other errors as a general banner.
           if (res.data && res.data.errors) {
             setErrors(res.data.errors)
           } else if (res.data && res.data.message) {
@@ -73,7 +73,7 @@ function App() {
           }
         } else {
           if (mode === 'register') {
-            // Registration succeeded — show the profile configurator so the user can pick sports/levels
+            // Registration succeeded: open the profile configurator to pick sports/levels
             setMode('profile')
           } else {
             setMessage('Login successful')
@@ -104,7 +104,7 @@ function App() {
           )}
           {mode === 'profile' ? (
             <ProfileConfigurator onComplete={async (payload) => {
-              // In a full app we'd show a loading indicator and handle errors more thoroughly here
+              // Save preferences and go to Explore; minimal error handling here
               const res = await profileService.saveProfile({ sports: payload })
               if (res.ok) {
                 setMessage('Profile saved successfully')
@@ -144,7 +144,7 @@ function App() {
           )}
 
           {errors.general && <div className="general-error">{errors.general}</div>}
-          {message && <div className="message">{message}</div>}
+          {mode !== 'explore' && message && <div className="message">{message}</div>}
 
           {mode !== 'explore' && (
             <p className="footnote">

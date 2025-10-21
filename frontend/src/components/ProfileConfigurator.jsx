@@ -41,7 +41,7 @@ export default function ProfileConfigurator({ onComplete }) {
   function back() { setStep(1) }
 
   function finish() {
-    // Build the payload the backend will want: an array of selected sports with chosen levels.
+    // Payload expected by the backend: array of selected sports with chosen levels.
     // Example: [{ id: 'football', level: 'intermediate' }, ...]
     const payload = selectedSports.map(id => ({ id, level: levels[id] || null }))
     if (onComplete) onComplete(payload)
@@ -62,7 +62,7 @@ export default function ProfileConfigurator({ onComplete }) {
               ))}
             </div>
             <div className="actions">
-              <button className="btn-ghost" onClick={() => { /* maybe cancel */ }}>Enrere</button>
+              <button className="btn-ghost" onClick={() => {}}>Enrere</button>
               <button className="btn-primary" onClick={next}>Següent</button>
             </div>
           </>
