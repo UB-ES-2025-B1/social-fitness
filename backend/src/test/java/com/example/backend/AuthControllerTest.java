@@ -22,7 +22,7 @@ class AuthControllerTest {
     String suffix = String.valueOf(System.nanoTime()); // o UUID.randomUUID().toString()
     String json = """
     {
-      "username": "qa_user_%s",
+      "username": "qa_user_5",
       "email": "qa_user_%s@mail.com",
       "password": "123456789abc"
     }
@@ -49,7 +49,7 @@ class AuthControllerTest {
   @Test
   void login_shouldReturn200_whenValidCredentialsFormat() throws Exception {
     var json = """
-      { "username":"qa_user", "password":"123456789abc" }
+      { "username":"qa_user_5", "password":"123456789abc" }
     """;
     mvc.perform(post("/auth/login")
         .contentType(MediaType.APPLICATION_JSON)
