@@ -8,7 +8,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -22,7 +22,7 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults()) // activar CORS
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <- preflight
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/", "/auth/**").permitAll() 
                 .requestMatchers("/profile", "/profile/**").permitAll()
                 .requestMatchers("/events", "/events/**").permitAll() 
                 .anyRequest().authenticated()

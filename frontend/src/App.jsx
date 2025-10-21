@@ -77,6 +77,7 @@ function App() {
             setMode('profile')
           } else {
             setMessage('Login successful')
+            setMode('explore')
           }
           setUsername('')
           setEmail('')
@@ -107,6 +108,7 @@ function App() {
               const res = await profileService.saveProfile({ sports: payload })
               if (res.ok) {
                 setMessage('Profile saved successfully')
+                setMode('explore')
               } else {
                 setErrors({ general: 'Failed to save profile' })
               }
