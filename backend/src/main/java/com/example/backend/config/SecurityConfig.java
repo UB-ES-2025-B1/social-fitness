@@ -24,6 +24,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <- preflight
                 .requestMatchers("/", "/auth/**").permitAll() 
                 .requestMatchers("/profile", "/profile/**").permitAll()
+                .requestMatchers("/users/**").permitAll()
+                .requestMatchers("/sports/**").permitAll()
                 .requestMatchers("/events", "/events/**").permitAll() 
                 .anyRequest().authenticated()
                 
