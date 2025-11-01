@@ -4,59 +4,59 @@ export default function RegisterForm({ username, email, password, confirm, error
   return (
     <form onSubmit={onSubmit} noValidate>
       <label className="label">
-        <span className="label-text">Username</span>
+        <span className="label-text">Nombre de usuario</span>
         <input
           type="text"
           value={username}
           onChange={(e) => onChange('username', e.target.value)}
           className={`input ${errors.username ? 'input-error' : ''}`}
-          placeholder="Enter your username"
+          placeholder="Elige un nombre de usuario"
           aria-invalid={errors.username ? 'true' : 'false'}
         />
         {errors.username && <div className="error">{errors.username}</div>}
       </label>
 
       <label className="label">
-        <span className="label-text">Email</span>
+        <span className="label-text">Correo electrónico</span>
         <input
           type="email"
           value={email}
           onChange={(e) => onChange('email', e.target.value)}
           className={`input ${errors.email ? 'input-error' : ''}`}
-          placeholder="Enter your email"
+          placeholder="Introduce tu correo electrónico"
           aria-invalid={errors.email ? 'true' : 'false'}
         />
         {errors.email && <div className="error">{errors.email}</div>}
       </label>
 
       <label className="label">
-        <span className="label-text">Password</span>
+        <span className="label-text">Contraseña</span>
         <input
           type="password"
           value={password}
           onChange={(e) => onChange('password', e.target.value)}
           className={`input ${errors.password ? 'input-error' : ''}`}
-          placeholder="Enter your password"
+          placeholder="Elige una contraseña"
           aria-invalid={errors.password ? 'true' : 'false'}
         />
         {errors.password && <div className="error">{errors.password}</div>}
       </label>
 
       <label className="label">
-        <span className="label-text">Confirm password</span>
+        <span className="label-text">Confirmar contraseña</span>
         <input
           type="password"
           value={confirm}
           onChange={(e) => onChange('confirm', e.target.value)}
           className={`input ${errors.confirm ? 'input-error' : ''}`}
-          placeholder="Confirm your password"
+          placeholder="Repite tu contraseña"
           aria-invalid={errors.confirm ? 'true' : 'false'}
         />
         {errors.confirm && <div className="error">{errors.confirm}</div>}
       </label>
 
       <button className="btn" type="submit" disabled={submitting}>
-        {submitting ? 'Creating…' : 'Create account'}
+        {submitting ? 'Creando…' : 'Crear cuenta'}
       </button>
     </form>
   )

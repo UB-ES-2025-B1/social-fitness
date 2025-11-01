@@ -61,13 +61,15 @@ Optional endpoints (future)
 
 Profile endpoint
 
-3) POST /profile
+-3) POST /profile/{userId}
 - Request JSON body:
   {
     "sports": [
       { "id": "football", "level": "intermediate" },
       { "id": "swimming", "level": "beginner" }
-    ]
+    ],
+    "bio": "optional string",
+    "profileImage": "optional string url"
   }
 - Successful response (200):
   { "message": "Profile saved" }
@@ -83,6 +85,17 @@ Events endpoints
   - sports: string — comma-separated sport names/ids matching UI chips (e.g. "Fútbol,Básquet")
   - location: string — free text location filter
   - days: string — comma-separated day ids from {mon,tue,wed,thu,fri,sat,sun}
+
+Notes for frontend behaviour
+- The frontend `Profile` view will perform the following:
+  - GET `/users/{userId}` to fetch the user object. The `sports` field is stored by the backend as a JSON string. The frontend should parse that string into an array of `{ id, level }` objects.
+  - Allow the user to add/remove sports and change the `level` for each sport.
+  - On save, the frontend will POST to `/profile/{userId}` the body shown above. The `sports` array must be an array of objects `{ id: string, level: string }` where `level` is one of `beginner|intermediate|advanced|expert`.
+  - Username and email are read-only in the UI and should not be changed via this endpoint.
+
+Validation expectations (backend)
+- If `sports` is missing or an empty array, return 400 with `{"message":"Validation failed","errors":{"sports":"Select at least one sport"}}` (this is how `ConfigurarPerfilController` currently behaves).
+
   - timeFrom: string — HH:mm lower bound (24h)
   - timeTo: string — HH:mm upper bound (24h)
 - Successful response (200):

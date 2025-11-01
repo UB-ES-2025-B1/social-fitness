@@ -2,28 +2,29 @@ import React, { useState } from 'react'
 import '../components/profile.css'
 
 const SPORTS = [
-  { id: 'football', label: 'Futbol' },
-  { id: 'basketball', label: 'Bàsquet' },
+  { id: 'football', label: 'Fútbol' },
+  { id: 'basketball', label: 'Baloncesto' },
   { id: 'tennis', label: 'Tenis' },
-  { id: 'swimming', label: 'Natació' },
-  { id: 'cycling', label: 'Ciclisme' },
-  { id: 'running', label: 'Còrrer' },
-  { id: 'gym', label: 'Gimnàs' },
-  { id: 'hiking', label: 'Senderisme' },
-  { id: 'paddle', label: 'Pàdel surf' },
+  { id: 'swimming', label: 'Natación' },
+  { id: 'cycling', label: 'Ciclismo' },
+  { id: 'running', label: 'Correr' },
+  { id: 'gym', label: 'Gimnasio' },
+  { id: 'hiking', label: 'Senderismo' },
+  { id: 'paddle', label: 'Pádel' },
 ]
 
 const LEVELS = [
-  { id: 'beginner', label: 'Principiant', desc: 'Començo o tinc poca experiència' },
-  { id: 'intermediate', label: 'Intermedi', desc: 'Practico regularment' },
-  { id: 'advanced', label: 'Avançat', desc: 'Tinc molta experiència' },
-  { id: 'expert', label: 'Expert', desc: 'Competeixo o sóc professional' },
+  { id: 'beginner', label: 'Principiante', desc: 'Empiezo o tengo poca experiencia' },
+  { id: 'intermediate', label: 'Intermedio', desc: 'Practico regularmente' },
+  { id: 'advanced', label: 'Avanzado', desc: 'Tengo mucha experiencia' },
+  { id: 'expert', label: 'Experto', desc: 'Compito o soy profesional' },
 ]
 
 export default function ProfileConfigurator({ onComplete }) {
   const [step, setStep] = useState(1)
   const [selectedSports, setSelectedSports] = useState([])
   const [levels, setLevels] = useState({})
+  const [error, setError] = useState('')
 
   function toggleSport(id) {
     setSelectedSports(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id])
@@ -34,7 +35,12 @@ export default function ProfileConfigurator({ onComplete }) {
   }
 
   function next() {
-    if (selectedSports.length === 0) return alert('Selecciona almenys un esport')
+    if (selectedSports.length === 0) {
+      setError('Selecciona al menos un deporte')
+      setTimeout(() => setError(''), 4000)
+      return
+    }
+    setError('')
     setStep(2)
   }
 
@@ -44,6 +50,12 @@ export default function ProfileConfigurator({ onComplete }) {
     // Payload expected by the backend: array of selected sports with chosen levels.
     // Example: [{ id: 'football', level: 'intermediate' }, ...]
     const payload = selectedSports.map(id => ({ id, level: levels[id] || null }))
+    // Persist locally so the profile view can display saved preferences in the demo
+    try {
+      localStorage.setItem('profile', JSON.stringify(payload))
+    } catch (e) {
+      // ignore storage errors
+    }
     if (onComplete) onComplete(payload)
   }
 
@@ -52,8 +64,9 @@ export default function ProfileConfigurator({ onComplete }) {
       <div className="profile-card">
         {step === 1 ? (
           <>
-            <h2>Configura el teu perfil esportiu</h2>
-            <p className="muted">Selecciona els teus esports favorits per rebre recomanacions d'esdeveniments</p>
+            <h2>Configura tu perfil deportivo</h2>
+            {error && <div className="banner error">{error}</div>}
+            <p className="muted">Selecciona tus deportes favoritos para recibir recomendaciones de eventos</p>
             <div className="sports-grid">
               {SPORTS.map(s => (
                 <button key={s.id} className={`sport ${selectedSports.includes(s.id) ? 'active' : ''}`} onClick={() => toggleSport(s.id)}>
@@ -62,14 +75,14 @@ export default function ProfileConfigurator({ onComplete }) {
               ))}
             </div>
             <div className="actions">
-              <button className="btn-ghost" onClick={() => {}}>Enrere</button>
-              <button className="btn-primary" onClick={next}>Següent</button>
+              <button className="btn-ghost" onClick={() => {}}>Atrás</button>
+              <button className="btn-primary" onClick={next}>Siguiente</button>
             </div>
           </>
         ) : (
           <>
-            <h2>Defineix els teus nivells</h2>
-            <p className="muted">Selecciona el teu nivell per a cada esport</p>
+            <h2>Define tus niveles</h2>
+            <p className="muted">Selecciona tu nivel para cada deporte</p>
             <div className="levels">
               {selectedSports.map(sid => (
                 <section key={sid} className="sport-level">
@@ -86,8 +99,8 @@ export default function ProfileConfigurator({ onComplete }) {
               ))}
             </div>
             <div className="actions">
-              <button className="btn-ghost" onClick={back}>Enrere</button>
-              <button className="btn-primary" onClick={finish}>Completar</button>
+              <button className="btn-ghost" onClick={back}>Atrás</button>
+              <button className="btn-primary" onClick={finish}>Finalizar</button>
             </div>
           </>
         )}

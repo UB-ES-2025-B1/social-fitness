@@ -6,6 +6,8 @@ import RegisterForm from './components/RegisterForm'
 import * as auth from './services/auth'
 import ProfileConfigurator from './components/ProfileConfigurator'
 import EventExplorer from './components/EventExplorer'
+import TopBar from './components/TopBar'
+import Profile from './components/Profile'
 import * as profileService from './services/profile'
 
 function App() {
@@ -16,6 +18,7 @@ function App() {
   const [mode, setMode] = useState(startMode) // one of: 'login' | 'register' | 'profile' | 'explore'
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
+  const [userId, setUserId] = useState(null)
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [errors, setErrors] = useState({})
@@ -73,10 +76,25 @@ function App() {
           }
         } else {
           if (mode === 'register') {
-            // Registration succeeded: open the profile configurator to pick sports/levels
-            setMode('profile')
+            // Registration succeeded: persist username/email (for demo UI) and open the profile configurator
+            try {
+              localStorage.setItem('username', username);
+              localStorage.setItem('email', email);
+              if (res.data && res.data.user && res.data.user.id) {
+                localStorage.setItem('userId', String(res.data.user.id))
+                setUserId(String(res.data.user.id))
+              }
+            } catch (e) {}
+            setMode('profile-config')
           } else {
             setMessage('Login successful')
+            try {
+              localStorage.setItem('username', username)
+              if (res.data && res.data.user && res.data.user.id) {
+                localStorage.setItem('userId', String(res.data.user.id))
+                setUserId(String(res.data.user.id))
+              }
+            } catch (e) {}
             setMode('explore')
           }
           setUsername('')
@@ -96,16 +114,25 @@ function App() {
     <div className="app-root">
       <main className="login-wrapper">
         <div className="login-card large" role="region" aria-label={`${mode} form`}>
-          {mode !== 'explore' && (
+          {(mode === 'login' || mode === 'register') && (
             <>
-              <h1 className="title">{mode === 'login' ? 'Log In' : 'Register'}</h1>
-              <p className="subtitle">{mode === 'login' ? 'Sign in to continue to Social Fitness' : 'Create a new account'}</p>
+              <h1 className="title">{mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h1>
+              <p className="subtitle">{mode === 'login' ? 'Inicia sesión para continuar en Social Fitness' : 'Crea una nueva cuenta'}</p>
             </>
           )}
-          {mode === 'profile' ? (
+          {(mode === 'explore' || mode === 'profile') && (
+            <TopBar mode={mode} onChange={(m) => { setMode(m); setErrors({}); setMessage('') }} />
+          )}
+
+          {mode === 'profile-config' ? (
             <ProfileConfigurator onComplete={async (payload) => {
               // Save preferences and go to Explore; minimal error handling here
-              const res = await profileService.saveProfile({ sports: payload })
+              const id = userId || localStorage.getItem('userId')
+              if (!id) {
+                setErrors({ general: 'User not identified; cannot save profile' })
+                return
+              }
+              const res = await profileService.saveProfile(id, { sports: payload })
               if (res.ok) {
                 setMessage('Profile saved successfully')
                 setMode('explore')
@@ -113,6 +140,8 @@ function App() {
                 setErrors({ general: 'Failed to save profile' })
               }
             }} />
+          ) : mode === 'profile' ? (
+            <Profile />
           ) : mode === 'explore' ? (
             <EventExplorer />
           ) : mode === 'login' ? (
@@ -146,12 +175,12 @@ function App() {
           {errors.general && <div className="general-error">{errors.general}</div>}
           {mode !== 'explore' && message && <div className="message">{message}</div>}
 
-          {mode !== 'explore' && (
+          {(mode === 'login' || mode === 'register') && (
             <p className="footnote">
               {mode === 'login' ? (
-                <>Don’t have an account? <button className="link" onClick={() => { setMode('register'); setMessage(''); setErrors({}); }}>Register</button></>
+                <>¿No tienes cuenta? <button className="link" onClick={() => { setMode('register'); setMessage(''); setErrors({}); }}>Crear cuenta</button></>
               ) : (
-                <>Already have an account? <button className="link" onClick={() => { setMode('login'); setMessage(''); setErrors({}); }}>Log in</button></>
+                <>¿Ya tienes una cuenta? <button className="link" onClick={() => { setMode('login'); setMessage(''); setErrors({}); }}>Iniciar sesión</button></>
               )}
             </p>
           )}
