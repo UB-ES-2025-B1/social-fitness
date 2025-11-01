@@ -125,13 +125,13 @@ export default function EventExplorer() {
         }
   // Ensure each card has an image; fall back by sport if missing
         setEvents(items.map(withDefaultSportImage))
-      } else {
+        } else {
         if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS.map(withDefaultSportImage))
-        else setError('Failed to load events')
+        else setError('Error al cargar eventos')
       }
     } catch (err) {
-      if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS.map(withDefaultSportImage))
-      else setError('Network error')
+  if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS.map(withDefaultSportImage))
+  else setError('Error de red')
     } finally {
       setLoading(false)
     }
@@ -145,7 +145,7 @@ export default function EventExplorer() {
   // Reload the list after joining (optimistic)
       load(query)
     } else {
-      alert('No s\u2019ha pogut unir a lâ€™esdeveniment')
+      setError('No se pudo unir al evento')
     }
   }
 

@@ -5,13 +5,14 @@
 }
 .profile-card {
   width: 100%;
-  max-width: 960px;
+  max-width: 1280px;
   background: linear-gradient(180deg,#ffffff,#fbfdff);
   border-radius: 12px;
   padding: 2.5rem;
   box-shadow: 0 12px 40px rgba(16,24,40,0.06);
 }
 .profile-card h2 { text-align: center; margin-bottom: 0.25rem }
+.profile-title { font-size: 2rem; color: #000; font-weight: 700; text-align: center; margin-bottom: 0.25rem }
 .muted { text-align: center; color: #6b7280; margin-bottom: 1.25rem }
 
 .sports-grid {
@@ -43,3 +44,34 @@
   .sports-grid { grid-template-columns: repeat(2, 1fr); }
   .level-grid { grid-template-columns: 1fr; }
 }
+
+/* Full-width profile card on wide screens */
+@media (min-width: 1200px) {
+  .profile-root { justify-content: stretch; padding-left: 3rem; padding-right: 3rem }
+  .profile-card { max-width: none; width: 100%; margin: 0 }
+  .profile-info { max-width: 900px; margin: 0 auto 1rem }
+}
+
+/* Profile display view styles */
+.profile-info { display:flex; flex-direction: column; gap: 8px; max-width: 720px; margin: 0 auto 1rem }
+.profile-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #eee; background: #f6f6f6 }
+.sports-list { display:flex; flex-direction: column; gap: 10px; margin-top: 12px }
+.sport-item { display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid #eee; padding: 12px; border-radius:10px }
+.sport-name { font-weight:600 }
+.skill-badge { padding:6px 10px; border-radius: 16px; font-weight:600; font-size:0.9rem }
+.level-beginner { background:#f3f4f6; color:#6b7280 }
+.level-intermediate { background:#eef2ff; color:#374151 }
+.level-advanced { background: linear-gradient(180deg,#7c5cff,#6b46c1); color: #fff }
+.level-expert { background: linear-gradient(180deg,#9b6bff,#7c5cff); color: #fff }
+
+/* Profile editor styles */
+.sport-row { display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid #eee; padding: 12px; border-radius:10px; gap:12px }
+.remove-btn { background: transparent; border: 1px solid #e6e9ee; padding: 6px 8px; border-radius: 8px; cursor: pointer }
+.level-select { padding: 8px 10px; border-radius: 8px; border: 1px solid #e6e9ee; background: #fff }
+.add-sport-row { margin-top: 12px }
+.chip { padding: 8px 12px; border-radius: 18px; border: 1px solid #e6e6e6; background: #fff; cursor: pointer }
+
+/* Inline banners for success/error messages */
+.banner { padding: 10px 14px; border-radius: 8px; margin: 0.75rem auto; max-width: 900px; text-align: center; font-weight: 600 }
+.banner.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981 }
+.banner.error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171 }
