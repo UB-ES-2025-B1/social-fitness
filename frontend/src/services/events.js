@@ -25,4 +25,8 @@ async function joinEvent(id) {
   return request(`/events/${id}/join`, { method: 'POST' })
 }
 
-export { listEvents, getEvent, joinEvent }
+async function createEvent(payload) {
+  return request('/events', { method: 'POST', body: payload })
+}
+
+export { listEvents, getEvent, joinEvent, createEvent }

@@ -8,13 +8,14 @@ import ProfileConfigurator from './components/ProfileConfigurator'
 import EventExplorer from './components/EventExplorer'
 import TopBar from './components/TopBar'
 import Profile from './components/Profile'
+import CreateEvent from './components/CreateEvent'
 import * as profileService from './services/profile'
 
 function App() {
   // Dev shortcut: add ?dev=profile or ?dev=explore in the URL to open a view directly during development
   const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
   const devParam = urlParams ? urlParams.get('dev') : null
-  const startMode = devParam === 'profile' || devParam === 'explore' ? devParam : 'login'
+  const startMode = devParam === 'profile' || devParam === 'explore' || devParam === 'create' ? devParam : 'login'
   const [mode, setMode] = useState(startMode) // one of: 'login' | 'register' | 'profile' | 'explore'
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -120,7 +121,7 @@ function App() {
               <p className="subtitle">{mode === 'login' ? 'Inicia sesión para continuar en Social Fitness' : 'Crea una nueva cuenta'}</p>
             </>
           )}
-          {(mode === 'explore' || mode === 'profile') && (
+          {(mode === 'explore' || mode === 'profile' || mode === 'create') && (
             <TopBar mode={mode} onChange={(m) => { setMode(m); setErrors({}); setMessage('') }} />
           )}
 
@@ -142,6 +143,8 @@ function App() {
             }} />
           ) : mode === 'profile' ? (
             <Profile />
+          ) : mode === 'create' ? (
+            <CreateEvent onCreated={(data) => { setMessage('Evento creado'); setMode('explore') }} />
           ) : mode === 'explore' ? (
             <EventExplorer />
           ) : mode === 'login' ? (
@@ -184,6 +187,10 @@ function App() {
               )}
             </p>
           )}
+          {/* invisible long text to stabilise page width across views */}
+          <div className="width-reserver" aria-hidden>
+            WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+          </div>
         </div>
       </main>
     </div>

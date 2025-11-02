@@ -4,14 +4,11 @@ import { getProfile, saveProfile } from '../services/profile'
 
 const SPORTS = [
   { id: 'football', label: 'Fútbol' },
-  { id: 'basketball', label: 'Baloncesto' },
+  { id: 'basketball', label: 'Básquet' },
   { id: 'tennis', label: 'Tenis' },
+  { id: 'running', label: 'Running' },
   { id: 'swimming', label: 'Natación' },
-  { id: 'cycling', label: 'Ciclismo' },
-  { id: 'running', label: 'Correr' },
-  { id: 'gym', label: 'Gimnasio' },
-  { id: 'hiking', label: 'Senderismo' },
-  { id: 'paddle', label: 'Pádel' },
+  { id: 'volleyball', label: 'Volleyball' },
 ]
 
 const LEVEL_LABEL = {
