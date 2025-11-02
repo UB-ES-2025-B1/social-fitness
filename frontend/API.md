@@ -115,6 +115,33 @@ Validation expectations (backend)
     }
   ]
 
+7) POST /events
+- Description: Create a new public event. The frontend will use this endpoint when the user fills the "Crear evento" form.
+- Request JSON body (frontend sends):
+  {
+    "title": "string",            // required
+    "sport": "football|basketball|tennis|running|swimming|volleyball", // required, one of the default UI sports
+    "date": "YYYY-MM-DD",        // required, ISO local date
+    "time": "HH:MM",             // required, 24h local time
+    "location": "string",        // required
+    "organizer": "string",       // required (frontend auto-fills from GET /users/{userId} when available and makes this field read-only)
+    "capacity": number,            // required (integer)
+    "price": number,               // required (decimal allowed)
+    "image": "string",           // required: frontend will provide a static image path mapped from the sport (e.g. "/img/sports/football.jpg")
+    "description": "string|null" // optional
+  }
+- Notes about image: the frontend auto-assigns a static image URL based on the selected sport. It uses `/img/sports/<id>.jpg` primarily and falls back to `/img/sports/<id>.svg` if the .jpg is not available. The backend should accept these local paths as valid image strings.
+- Notes about organizer: when a logged-in user is present (localStorage.userId), the frontend will attempt GET `/users/{userId}` and autofill `organizer` with the returned username and mark the field read-only. If no userId is available, the organizer field remains editable.
+- Successful response (201 Created):
+  {
+    "id": number,
+    "message": "Event created"
+  }
+- Error responses:
+  - 400 Validation error: `{ "message": "Validation failed", "errors": { ... } }` — include field-level messages.
+  - 401 Unauthorized: `{ "message": "Authentication required" }` if creating events is permission-protected (current backend config permits `/events` but may change).
+
+
 5) GET /events/:id
 - Description: Returns the details for a single event.
 - Successful response (200):

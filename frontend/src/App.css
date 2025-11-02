@@ -121,3 +121,12 @@
   /* explorer additional spacing */
   .explorer-root { padding-left: 3rem; padding-right: 3rem }
 }
+
+/* invisible width reserver to keep layout stable when banners appear/disappear */
+.width-reserver {
+  visibility: hidden;       /* keep it invisible but reserve space */
+  white-space: nowrap;      /* one long line to establish width */
+  font-size: 14px;          /* reasonable width per character */
+  line-height: 1;           /* small vertical footprint */
+  margin-top: 4px;
+}
