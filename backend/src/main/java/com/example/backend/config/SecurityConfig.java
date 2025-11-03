@@ -22,13 +22,14 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults()) // activar CORS
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <- preflight
-                .requestMatchers("/", "/auth/**").permitAll() 
+                .requestMatchers("/", "/auth/**").permitAll()
                 .requestMatchers("/profile", "/profile/**").permitAll()
                 .requestMatchers("/users/**").permitAll()
                 .requestMatchers("/sports/**").permitAll()
-                .requestMatchers("/events", "/events/**").permitAll() 
+                .requestMatchers("/events", "/events/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll() // healthchecks allowed
                 .anyRequest().authenticated()
-                
+
             );
         return http.build();
     }
@@ -37,7 +38,7 @@ public class SecurityConfig {
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }*/
-    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
