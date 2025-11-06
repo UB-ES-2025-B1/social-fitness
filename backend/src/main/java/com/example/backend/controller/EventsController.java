@@ -46,9 +46,15 @@ public class EventsController {
 
   // 👉 NUEVO ENDPOINT PARA CREAR EVENTOS
   @PostMapping
-  public ResponseEntity<?> create(@RequestBody Event e) {
-    Event saved = repo.save(e);
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(Map.of("id", saved.getId(), "message", "Event created"));
+public ResponseEntity<?> create(@RequestBody Event e) {
+  try {
+      Event saved = service.create(e);
+      return ResponseEntity.status(HttpStatus.CREATED)
+              .body(Map.of("id", saved.getId(), "message", "Event created"));
+  } catch (EventService.ValidationException ex) {
+      return ResponseEntity.badRequest()
+              .body(Map.of("message", "Validation failed", "errors", ex.getErrors()));
   }
+}
+
 }
