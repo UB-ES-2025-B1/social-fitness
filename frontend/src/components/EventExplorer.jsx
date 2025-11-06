@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import '../components/events.css'
-import { listEvents, joinEvent } from '../services/events'
+import { listEvents, joinEvent, leaveEvent } from '../services/events'
 import EventFilterModal from './EventFilterModal'
 
 const DEV_USE_SAMPLE = (import.meta.env.VITE_API_BASE || '') === ''
@@ -73,7 +73,7 @@ function withDefaultSportImage(ev) {
   return { ...ev, imagePrimary: primary, imageFallback: fallbackLocal }
 }
 
-function EventCard({ ev, onJoin }) {
+function EventCard({ ev, joined, onJoin, onLeave }) {
   return (
     <article className="event-card">
       <div className="event-image">
@@ -93,7 +93,14 @@ function EventCard({ ev, onJoin }) {
         </div>
       </div>
       <div className="event-actions">
-        <button className="btn-primary" onClick={() => onJoin(ev.id)}>Unirse</button>
+        {!joined ? (
+          <button className="btn-primary" onClick={() => onJoin(ev.id)}>Unirse</button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <div className="joined-text">Te has unido</div>
+            <button className="btn-leave" onClick={() => onLeave(ev.id)}>Salir de evento</button>
+          </div>
+        )}
       </div>
     </article>
   )
@@ -104,8 +111,27 @@ export default function EventExplorer() {
   const [filters, setFilters] = useState({ sports: [], location: '', days: [], timeFrom: '', timeTo: '' })
   const [showFilters, setShowFilters] = useState(false)
   const [events, setEvents] = useState([])
+  const [joinedSet, setJoinedSet] = useState(() => {
+    try {
+      const raw = localStorage.getItem('joinedEvents')
+      return new Set(raw ? JSON.parse(raw) : [])
+    } catch (e) { return new Set() }
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [joinedCollapsed, setJoinedCollapsed] = useState(true)
+
+  function sortByJoined(list, set = joinedSet) {
+    try {
+      return list.slice().sort((a, b) => {
+        const A = set && set.has(a.id) ? 0 : 1
+        const B = set && set.has(b.id) ? 0 : 1
+        return A - B
+      })
+    } catch (e) {
+      return list
+    }
+  }
 
   async function load(q = query, f = filters) {
     setLoading(true)
@@ -124,9 +150,10 @@ export default function EventExplorer() {
           items = SAMPLE_EVENTS
         }
   // Ensure each card has an image; fall back by sport if missing
-        setEvents(items.map(withDefaultSportImage))
+  const mapped = items.map(withDefaultSportImage)
+  setEvents(sortByJoined(mapped))
         } else {
-        if (DEV_USE_SAMPLE) setEvents(SAMPLE_EVENTS.map(withDefaultSportImage))
+  if (DEV_USE_SAMPLE) setEvents(sortByJoined(SAMPLE_EVENTS.map(withDefaultSportImage)))
         else setError('Error al cargar eventos')
       }
     } catch (err) {
@@ -140,12 +167,39 @@ export default function EventExplorer() {
   useEffect(() => { load() }, [])
 
   async function handleJoin(id) {
-    const res = await joinEvent(id)
-    if (res.ok) {
-  // Reload the list after joining (optimistic)
-      load(query)
-    } else {
-      setError('No se pudo unir al evento')
+    setError(null)
+    try {
+      const res = await joinEvent(id)
+      if (res.ok) {
+        // optimistic update: mark joined and increase participants locally
+        const next = new Set(joinedSet)
+        next.add(id)
+        try { localStorage.setItem('joinedEvents', JSON.stringify(Array.from(next))) } catch (e) {}
+        setJoinedSet(next)
+        setEvents(prev => sortByJoined(prev.map(ev => ev.id === id ? { ...ev, participants: (Number(ev.participants) || 0) + 1 } : ev), next))
+      } else {
+        setError('No se pudo unir al evento')
+      }
+    } catch (err) {
+      setError('Network error')
+    }
+  }
+
+  async function handleLeave(id) {
+    setError(null)
+    try {
+      const res = await leaveEvent(id)
+      if (res.ok) {
+        const next = new Set(joinedSet)
+        next.delete(id)
+        try { localStorage.setItem('joinedEvents', JSON.stringify(Array.from(next))) } catch (e) {}
+        setJoinedSet(next)
+        setEvents(prev => sortByJoined(prev.map(ev => ev.id === id ? { ...ev, participants: Math.max(0, (Number(ev.participants) || 1) - 1) } : ev), next))
+      } else {
+        setError('No se pudo salir del evento')
+      }
+    } catch (err) {
+      setError('Network error')
     }
   }
 
@@ -165,9 +219,43 @@ export default function EventExplorer() {
         {loading && <div className="muted">Cargando...</div>}
         {error && <div className="general-error">{error}</div>}
 
-        {events.map(ev => (
-          <EventCard key={ev.id} ev={ev} onJoin={handleJoin} />
-        ))}
+        {(() => {
+          const joinedEvents = events.filter(ev => joinedSet.has(ev.id))
+          const otherEvents = events.filter(ev => !joinedSet.has(ev.id))
+          return (
+            <>
+              {joinedEvents.length > 0 && (
+                <section className="joined-group">
+                  <div className="group-header">
+                    <button className="group-toggle" onClick={() => setJoinedCollapsed(s => !s)} aria-expanded={!joinedCollapsed}>
+                      {joinedCollapsed ? '►' : '▾'} Tus eventos ({joinedEvents.length})
+                    </button>
+                  </div>
+                  {!joinedCollapsed && (
+                    <div className="group-list">
+                      {joinedEvents.map(ev => (
+                        <EventCard key={ev.id} ev={ev} joined={true} onJoin={handleJoin} onLeave={handleLeave} />
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {otherEvents.length > 0 && (
+                <section className="other-group">
+                  <div className="group-header small"><strong>Otros eventos</strong></div>
+                  <div className="group-list">
+                    {otherEvents.map(ev => (
+                      <EventCard key={ev.id} ev={ev} joined={joinedSet.has(ev.id)} onJoin={handleJoin} onLeave={handleLeave} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {joinedEvents.length === 0 && otherEvents.length === 0 && <div className="muted">No hay eventos</div>}
+            </>
+          )
+        })()}
 
         {!loading && events.length === 0 && <div className="muted">No hay eventos</div>}
       </main>

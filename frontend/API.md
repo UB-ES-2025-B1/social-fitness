@@ -169,3 +169,12 @@ Validation expectations (backend)
   - 400: { "message": "Event full" }
   - 401: { "message": "Authentication required" }
 
+  7) POST /events/:id/leave
+  - Description: Leaves the event for the authenticated user (cookie or token, as described above).
+  - Request body: none
+  - Successful response (200):
+    { "message": "Left" }
+  - Error responses:
+    - 400: { "message": "Not a participant" }
+    - 401: { "message": "Authentication required" }
+
