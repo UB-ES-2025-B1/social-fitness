@@ -117,9 +117,58 @@ public class EventService {
         repo.save(e);
     }
 
+    public Event create(Event e) throws ValidationException {
+        List<String> errors = new ArrayList<>();
+
+        if (e.getTitle() == null || e.getTitle().isBlank()) {
+            errors.add("Title is required");
+        }
+        if (e.getSport() == null || e.getSport().isBlank()) {
+            errors.add("Sport is required");
+        }
+        if (e.getDate() == null) {
+            errors.add("Date is required");
+        } else if (e.getDate().isBefore(LocalDate.now())) {
+            errors.add("Date cannot be in the past");
+        }
+        if (e.getTime() == null) {
+            errors.add("Time is required");
+        }
+        if (e.getLocation() == null || e.getLocation().isBlank()) {
+            errors.add("Location is required");
+        }
+        if (e.getOrganizer() == null || e.getOrganizer().isBlank()) {
+            errors.add("Organizer is required");
+        }
+        if (e.getCapacity() == null || e.getCapacity() < 2) {
+            errors.add("Capacity must be a greater than or equal to 2");
+        }
+        if (e.getPrice() == null || e.getPrice().compareTo(java.math.BigDecimal.ZERO) < 0) {
+            errors.add("Price cannot be negative");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
+
+        e.setParticipants(0); // asegurar que empieza en 0
+        return repo.save(e);
+    }
+
     public static class EventFullException extends RuntimeException {
         public EventFullException() {
             super("Event full");
+        }
+    }
+    
+    public static class ValidationException extends Exception {
+        private final List<String> errors;
+        public ValidationException(List<String> errors) {
+            super(errors == null || errors.isEmpty() ? "Validation failed" : String.join(", ", errors));
+            this.errors = errors == null ? List.of() : List.copyOf(errors);
+        }
+        public List<String> getErrors() {
+            return errors;
         }
     }
 
