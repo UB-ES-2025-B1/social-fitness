@@ -51,6 +51,30 @@
 .event-actions { display:flex; justify-content:center }
 .event-actions .btn-primary { padding: 10px 18px }
 
+/* Joined state text above leave button */
+.joined-text { font-weight: 700; color: #0f172a; }
+
+/* Leave button (red, wider) */
+.btn-leave {
+  background: linear-gradient(180deg,#ef4444,#dc2626); /* red */
+  color: white;
+  border: none;
+  padding: 10px 22px; /* wider */
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-leave:hover { filter: brightness(0.95) }
+
+/* Group headers for joined/other events */
+.group-header { display:flex; align-items:center; gap:12px; margin: 8px 0 }
+.group-header.small { margin-top: 18px }
+.group-toggle { background: transparent; border: 0; font-size: 1rem; font-weight: 700; cursor: pointer; color: #0f172a }
+.group-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px }
+
+/* subtle highlight for joined section */
+.joined-group { padding: 8px 0 12px; border-radius: 8px }
+
 .muted { color: #888 }
 .general-error { color: #b00020 }
 

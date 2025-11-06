@@ -115,6 +115,41 @@ export default function Profile() {
     }
   }
 
+  async function handleCancel() {
+    // Cancel editing and restore last-saved profile without reloading the page
+    setEditing(false)
+    setErrorMessage('')
+    const userId = localStorage.getItem('userId')
+    if (!userId) {
+      try {
+        const p = JSON.parse(localStorage.getItem('profile') || '[]')
+        setProfile(Array.isArray(p) ? p : [])
+      } catch (e) {
+        setProfile([])
+      }
+      return
+    }
+
+    try {
+      const res = await getProfile(userId)
+      if (res.ok && res.data) {
+        const d = res.data
+        setUsername(d.username || username)
+        setEmail(d.email || email)
+        if (d.sports) {
+          try {
+            const parsed = JSON.parse(d.sports)
+            setProfile(Array.isArray(parsed) ? parsed : [])
+          } catch (err) {
+            setProfile([])
+          }
+        }
+      }
+    } catch (e) {
+      // ignore and leave current profile as-is
+    }
+  }
+
   return (
     <div className="profile-root">
       <div className="profile-card">
@@ -139,7 +174,7 @@ export default function Profile() {
           ) : (
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn-primary" onClick={handleSave}>Guardar</button>
-              <button className="btn-ghost" onClick={() => { setEditing(false); /* reload to discard */ window.location.reload() }}>Cancelar</button>
+              <button className="btn-ghost" onClick={handleCancel}>Cancelar</button>
             </div>
           )}
         </div>
