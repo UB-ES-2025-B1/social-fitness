@@ -61,7 +61,7 @@ Optional endpoints (future)
 
 Profile endpoint
 
--3) POST /profile/{userId}
+3) POST /profile/{userId}
 - Request JSON body:
   {
     "sports": [
