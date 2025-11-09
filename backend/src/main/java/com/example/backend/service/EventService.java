@@ -117,6 +117,16 @@ public class EventService {
         repo.save(e);
     }
 
+    public void leave(Long id) {
+        Event e = repo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Event not found"));
+        if (e.getParticipants() <= 0) {
+            throw new IllegalStateException("Not a participant");
+        }
+        e.setParticipants(e.getParticipants() - 1);
+        repo.save(e);
+    }
+
     public Event create(Event e) throws ValidationException {
         List<String> errors = new ArrayList<>();
 
