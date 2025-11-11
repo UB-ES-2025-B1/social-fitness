@@ -55,7 +55,7 @@
 
 .login-wrapper {
   width: 100%;
-  max-width: 980px; /* larger desktop card */
+  max-width: 1280px; /* larger desktop card - increased to use more horizontal space */
   padding: 4.5rem;
 }
 
@@ -91,4 +91,42 @@
 @media (max-width: 480px) {
   .login-wrapper { padding: 1rem; }
   .login-card { padding: 1rem; }
+}
+
+/* Make layout full-width on large screens (desktop) while keeping mobile look intact */
+@media (min-width: 1200px) {
+  /* expand the top-level containers to use available viewport width */
+  .login-wrapper,
+  .profile-card,
+  .explorer-list,
+  .explorer-header,
+  .topbar-inner,
+  .login-card.large {
+    max-width: none !important;
+    width: 100%;
+    margin: 0;
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+
+  /* give the page some comfortable side padding */
+  .app-root { padding-left: 2rem; padding-right: 2rem }
+
+  /* ensure the main card still looks elevated but can stretch */
+  .login-card.large {
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(16,24,40,0.06);
+  }
+
+  /* explorer additional spacing */
+  .explorer-root { padding-left: 3rem; padding-right: 3rem }
+}
+
+/* invisible width reserver to keep layout stable when banners appear/disappear */
+.width-reserver {
+  visibility: hidden;       /* keep it invisible but reserve space */
+  white-space: nowrap;      /* one long line to establish width */
+  font-size: 14px;          /* reasonable width per character */
+  line-height: 1;           /* small vertical footprint */
+  margin-top: 4px;
 }

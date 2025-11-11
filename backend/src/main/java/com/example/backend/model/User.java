@@ -40,7 +40,7 @@ public class User implements UserDetails {
   @Column(name = "profile_image")
   private String profileImage;
 
-  @Column(name = "created_at", nullable = false, updatable = false)
+  @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamp default CURRENT_TIMESTAMP")
   private LocalDateTime createdAt;
 
   @PrePersist
