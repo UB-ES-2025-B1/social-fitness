@@ -111,9 +111,15 @@ export default function EventExplorer() {
   const [filters, setFilters] = useState({ sports: [], location: '', days: [], timeFrom: '', timeTo: '' })
   const [showFilters, setShowFilters] = useState(false)
   const [events, setEvents] = useState([])
+  // Persist joined events per-user to avoid leaking another user's joined state.
+  function joinedStorageKey() {
+    const uid = typeof window !== 'undefined' ? localStorage.getItem('userId') : null
+    return `joinedEvents:${uid || 'anon'}`
+  }
+
   const [joinedSet, setJoinedSet] = useState(() => {
     try {
-      const raw = localStorage.getItem('joinedEvents')
+      const raw = localStorage.getItem(joinedStorageKey())
       return new Set(raw ? JSON.parse(raw) : [])
     } catch (e) { return new Set() }
   })
@@ -171,12 +177,12 @@ export default function EventExplorer() {
     try {
       const res = await joinEvent(id)
       if (res.ok) {
-        // optimistic update: mark joined and increase participants locally
-        const next = new Set(joinedSet)
-        next.add(id)
-        try { localStorage.setItem('joinedEvents', JSON.stringify(Array.from(next))) } catch (e) {}
-        setJoinedSet(next)
-        setEvents(prev => sortByJoined(prev.map(ev => ev.id === id ? { ...ev, participants: (Number(ev.participants) || 0) + 1 } : ev), next))
+  // optimistic update: mark joined and increase participants locally
+  const next = new Set(joinedSet)
+  next.add(id)
+  try { localStorage.setItem(joinedStorageKey(), JSON.stringify(Array.from(next))) } catch (e) {}
+  setJoinedSet(next)
+  setEvents(prev => sortByJoined(prev.map(ev => ev.id === id ? { ...ev, participants: (Number(ev.participants) || 0) + 1 } : ev), next))
       } else {
         setError('No se pudo unir al evento')
       }
@@ -190,11 +196,11 @@ export default function EventExplorer() {
     try {
       const res = await leaveEvent(id)
       if (res.ok) {
-        const next = new Set(joinedSet)
-        next.delete(id)
-        try { localStorage.setItem('joinedEvents', JSON.stringify(Array.from(next))) } catch (e) {}
-        setJoinedSet(next)
-        setEvents(prev => sortByJoined(prev.map(ev => ev.id === id ? { ...ev, participants: Math.max(0, (Number(ev.participants) || 1) - 1) } : ev), next))
+  const next = new Set(joinedSet)
+  next.delete(id)
+  try { localStorage.setItem(joinedStorageKey(), JSON.stringify(Array.from(next))) } catch (e) {}
+  setJoinedSet(next)
+  setEvents(prev => sortByJoined(prev.map(ev => ev.id === id ? { ...ev, participants: Math.max(0, (Number(ev.participants) || 1) - 1) } : ev), next))
       } else {
         setError('No se pudo salir del evento')
       }

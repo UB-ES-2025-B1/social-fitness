@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import '../components/profile.css'
-import { createEvent } from '../services/events'
+import { createEvent, joinEvent } from '../services/events'
 import { getProfile } from '../services/profile'
 
 const SPORTS = [
@@ -115,6 +115,36 @@ export default function CreateEvent({ onCreated = () => {} }) {
         setError('')
         // call optional callback to switch view or refresh list
         onCreated(res.data)
+        // try to join the creator to the event on the backend, then persist per-user joined list
+        try {
+          if (res.data && res.data.id) {
+            // call backend join endpoint
+            try {
+              const jr = await joinEvent(res.data.id)
+              if (jr && jr.ok) {
+                // mark creator as joined for this event in per-user local storage so they see it in "Tus eventos"
+                try {
+                  const uid = typeof window !== 'undefined' ? localStorage.getItem('userId') : null
+                  const key = `joinedEvents:${uid || 'anon'}`
+                  const raw = localStorage.getItem(key)
+                  const arr = raw ? JSON.parse(raw) : []
+                  if (!arr.includes(String(res.data.id))) {
+                    arr.push(String(res.data.id))
+                    localStorage.setItem(key, JSON.stringify(arr))
+                  }
+                } catch (e) {
+                  // ignore storage failures
+                }
+              } else {
+                // join failed; ignore for now but leave event created
+              }
+            } catch (e) {
+              // network / join error - ignore to avoid blocking create flow
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
   // reset form
         setTitle('')
         setDate('')
