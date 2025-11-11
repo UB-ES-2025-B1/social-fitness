@@ -131,6 +131,13 @@ export default function CreateEvent({ onCreated = () => {} }) {
                   if (!arr.includes(String(res.data.id))) {
                     arr.push(String(res.data.id))
                     localStorage.setItem(key, JSON.stringify(arr))
+                    try {
+                      // notify other components in the same window that joined events changed
+                      const ev = new CustomEvent('joinedEventsChanged', { detail: { id: String(res.data.id), action: 'join' } })
+                      window.dispatchEvent(ev)
+                    } catch (e) {
+                      // ignore
+                    }
                   }
                 } catch (e) {
                   // ignore storage failures

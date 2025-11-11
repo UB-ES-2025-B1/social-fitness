@@ -172,6 +172,31 @@ export default function EventExplorer() {
 
   useEffect(() => { load() }, [])
 
+  // Listen for joined/left events dispatched elsewhere in the app (same window)
+  useEffect(() => {
+    function handler(e) {
+      try {
+        const d = e && e.detail ? e.detail : null
+        if (!d || !d.id) return
+        const id = String(d.id)
+        const action = d.action || 'join'
+        setJoinedSet(prev => {
+          const next = new Set(prev)
+          if (action === 'join') next.add(id)
+          else next.delete(id)
+          try { localStorage.setItem(joinedStorageKey(), JSON.stringify(Array.from(next))) } catch (err) {}
+          // update participants count locally for immediate feedback
+          setEvents(prevEvents => sortByJoined(prevEvents.map(ev => ev.id === id ? { ...ev, participants: action === 'join' ? (Number(ev.participants) || 0) + 1 : Math.max(0, (Number(ev.participants) || 1) - 1) } : ev), next))
+          return next
+        })
+      } catch (err) {
+        // ignore
+      }
+    }
+    window.addEventListener('joinedEventsChanged', handler)
+    return () => window.removeEventListener('joinedEventsChanged', handler)
+  }, [])
+
   async function handleJoin(id) {
     setError(null)
     try {
