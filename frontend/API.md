@@ -137,6 +137,7 @@ Validation expectations (backend)
     "id": number,
     "message": "Event created"
   }
+- Frontend behavior: after receiving a successful create response containing the new event `id`, the frontend will attempt to call POST `/events/{id}/join` on behalf of the creator so the creator appears as a participant immediately in the UI. The backend should accept this request for the event creator (idempotent if the creator is already a participant). If the backend instead auto-adds the creator during event creation, the subsequent join call should still succeed (return 200) or be safely ignored by the client.
 - Error responses:
   - 400 Validation error: `{ "message": "Validation failed", "errors": { ... } }` — include field-level messages.
   - 401 Unauthorized: `{ "message": "Authentication required" }` if creating events is permission-protected (current backend config permits `/events` but may change).
@@ -168,6 +169,7 @@ Validation expectations (backend)
 - Error responses:
   - 400: { "message": "Event full" }
   - 401: { "message": "Authentication required" }
+  - Notes for backend implementers: this endpoint must be idempotent — calling it twice for the same authenticated user should not cause an error (return 200 and a harmless message). The frontend will call this endpoint automatically right after event creation when the creator is present on the client. Implementations may also choose to add the creator as a participant during the `POST /events` handling; in that case allow the `/join` call to return 200 or 204 and not fail.
 
   7) POST /events/:id/leave
   - Description: Leaves the event for the authenticated user (cookie or token, as described above).
