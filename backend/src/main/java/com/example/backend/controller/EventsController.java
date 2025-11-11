@@ -44,11 +44,28 @@ public class EventsController {
     return ResponseEntity.ok(Map.of("message", "Joined"));
   }
 
+  @PostMapping("/{id}/leave")
+  public ResponseEntity<?> leave(@PathVariable Long id) {
+    try {
+      service.leave(id);
+      return ResponseEntity.ok(Map.of("message", "Left"));
+    } catch (IllegalStateException ex) {
+      return ResponseEntity.badRequest()
+              .body(Map.of("message", ex.getMessage()));
+    }
+  }
+
   // 👉 NUEVO ENDPOINT PARA CREAR EVENTOS
   @PostMapping
-  public ResponseEntity<?> create(@RequestBody Event e) {
-    Event saved = repo.save(e);
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(Map.of("id", saved.getId(), "message", "Event created"));
+public ResponseEntity<?> create(@RequestBody Event e) {
+  try {
+      Event saved = service.create(e);
+      return ResponseEntity.status(HttpStatus.CREATED)
+              .body(Map.of("id", saved.getId(), "message", "Event created"));
+  } catch (EventService.ValidationException ex) {
+      return ResponseEntity.badRequest()
+              .body(Map.of("message", "Validation failed", "errors", ex.getErrors()));
   }
+}
+
 }

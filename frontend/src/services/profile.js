@@ -1,8 +1,14 @@
 import { request } from './api'
 
-async function saveProfile({ sports }) {
+// Save profile for a given userId. Backend expects POST /profile/{userId}
+async function saveProfile(userId, { sports, bio, profileImage } = {}) {
   // `sports` is an array like: [{ id: 'football', level: 'intermediate' }, ...]
-  return request('/profile', { method: 'POST', body: { sports } })
+  return request(`/profile/${userId}`, { method: 'POST', body: { sports, bio, profileImage } })
 }
 
-export { saveProfile }
+// Fetch user profile via users endpoint (backend provides GET /users/{userId})
+async function getProfile(userId) {
+  return request(`/users/${userId}`, { method: 'GET' })
+}
+
+export { saveProfile, getProfile }
