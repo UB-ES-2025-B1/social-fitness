@@ -21,20 +21,22 @@ describe('RegisterForm', () => {
       />
     )
 
+    // use label queries which are more robust and match the Spanish UI
     await userEvent.type(
-      screen.getByPlaceholderText(/enter your username/i),
+      screen.getByLabelText(/nombre de usuario/i),
       'devtest'
     )
     await userEvent.type(
-      screen.getByPlaceholderText(/enter your email/i),
+      screen.getByLabelText(/correo electrónico|email/i),
       'devtest@example.com'
     )
+    // 'Contraseña' and 'Confirmar contraseña' are different labels; match exact label to avoid collisions
     await userEvent.type(
-      screen.getByPlaceholderText(/enter your password/i),
+      screen.getByLabelText(/^Contraseña$/i),
       'devtest123'
     )
     await userEvent.type(
-      screen.getByPlaceholderText(/confirm your password/i),
+      screen.getByLabelText(/^(Confirmar contraseña|Repite tu contraseña)$/i),
       'devtest123'
     )
 
@@ -45,7 +47,7 @@ describe('RegisterForm', () => {
     )
 
     await userEvent.click(
-      screen.getByRole('button', { name: /create account/i })
+      screen.getByRole('button', { name: /crear cuenta|crear cuenta/i })
     )
     expect(onSubmit).toHaveBeenCalledTimes(1)
   })

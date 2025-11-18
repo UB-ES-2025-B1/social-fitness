@@ -21,12 +21,13 @@ describe('LoginForm', () => {
       />
     )
 
+    // prefer label queries (robust to placeholder/language changes)
     await userEvent.type(
-      screen.getByPlaceholderText(/enter your username/i),
+      screen.getByLabelText(/nombre de usuario/i),
       'devtest'
     )
     await userEvent.type(
-      screen.getByPlaceholderText(/enter your password/i),
+      screen.getByLabelText(/contraseña|password/i),
       'devtest123'
     )
 
@@ -35,7 +36,7 @@ describe('LoginForm', () => {
     expect(onPasswordChange).toHaveBeenCalled()
 
     // Click en "Sign in" -> onSubmit
-    await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
+  await userEvent.click(screen.getByRole('button', { name: /iniciar sesión|sign in/i }))
     expect(onSubmit).toHaveBeenCalledTimes(1)
   })
 })
