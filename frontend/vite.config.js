@@ -8,14 +8,9 @@ export default defineConfig({
     tailwindcss(),
   ],
   test: {
-    environment: 'jsdom',
+    environment: 'happy-dom',
     setupFiles: './src/setupTests.js',
     globals: true,
     css: true, // permite importar CSS en tests
-    poolOptions: {
-      threads: {
-        singleThread: true, // Force single thread execution to avoid jsdom worker issues in CI
-      },
-    },
   },
 })
