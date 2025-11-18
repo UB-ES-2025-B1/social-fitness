@@ -12,6 +12,7 @@ export default defineConfig({
     setupFiles: './src/setupTests.js',
     globals: true,
     css: true, // permite importar CSS en tests
-    pool: 'vmThreads', // Use vmThreads to avoid webidl-conversions issues
+    fileParallelism: false, // Run test files sequentially
+    maxConcurrency: 1, // Run tests sequentially to avoid jsdom worker thread issues
   },
 })
