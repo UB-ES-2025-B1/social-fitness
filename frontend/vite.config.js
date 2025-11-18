@@ -12,6 +12,6 @@ export default defineConfig({
     setupFiles: './src/setupTests.js',
     globals: true,
     css: true, // permite importar CSS en tests
-    pool: 'forks', // Fix for webidl-conversions errors in CI
+    pool: 'vmThreads', // Use vmThreads to avoid webidl-conversions issues
   },
 })
