@@ -29,6 +29,10 @@ jobs:
       - name: Run frontend tests
         run: npm run test --silent
         working-directory: frontend
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          VITEST_MAX_THREADS: 1
+          VITEST_MIN_THREADS: 1
 
   backend:
     name: Backend tests

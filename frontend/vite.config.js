@@ -12,7 +12,10 @@ export default defineConfig({
     setupFiles: './src/setupTests.js',
     globals: true,
     css: true, // permite importar CSS en tests
-    fileParallelism: false, // Run test files sequentially
-    maxConcurrency: 1, // Run tests sequentially to avoid jsdom worker thread issues
+    poolOptions: {
+      threads: {
+        singleThread: true, // Force single thread execution to avoid jsdom worker issues in CI
+      },
+    },
   },
 })
