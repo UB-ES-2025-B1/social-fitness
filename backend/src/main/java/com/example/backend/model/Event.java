@@ -3,6 +3,8 @@ package com.example.backend.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.*;
+import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "events")
@@ -21,6 +23,13 @@ public class Event {
   @Column(nullable = false) private BigDecimal price = BigDecimal.ZERO;
   private String image;                                 // URL opcional
   @Column(columnDefinition = "text") private String description;
+  @ManyToMany(fetch = FetchType.LAZY) // LAZY: No cargar todos los usuarios al listar eventos
+  @JoinTable(
+    name = "event_participants",
+    joinColumns = @JoinColumn(name = "event_id"),
+    inverseJoinColumns = @JoinColumn(name = "user_id")
+  )
+  private Set<User> participantUsers = new HashSet<>();
 
   // getters/setters...
   public Long getId() { return id; }
@@ -35,6 +44,7 @@ public class Event {
   public BigDecimal getPrice() { return price; }
   public String getImage() { return image; }
   public String getDescription() { return description; }
+  public Set<User> getParticipantUsers() {return participantUsers; }
 
   public void setId(Long id) { this.id = id; }
   public void setTitle(String title) { this.title = title; }
@@ -48,4 +58,20 @@ public class Event {
   public void setPrice(BigDecimal price) { this.price = price; }
   public void setImage(String image) { this.image = image; }
   public void setDescription(String description) { this.description = description; }
+  public void setParticipantUsers(Set<User> participantUsers) {this.participantUsers = participantUsers; }
+
+
+  public void addParticipant(User user) {
+    if (this.participantUsers.add(user)) {
+      user.getJoinedEvents().add(this);
+      this.participants = this.participantUsers.size();
+      }
+    }
+  
+  public void removeParticipant(User user) {
+    if (this.participantUsers.remove(user)) {
+      user.getJoinedEvents().remove(this);
+      this.participants = this.participantUsers.size();
+    }
+  }
 }
