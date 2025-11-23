@@ -180,6 +180,111 @@ Validation expectations (backend)
     - 400: { "message": "Not a participant" }
     - 401: { "message": "Authentication required" }
 
+8) GET /events/:id/chat/messages
+
+Description: Returns the full chat history for the event.
+
+Request body: none
+
+Successful response (200):
+
+[
+  {
+    "id": "string",
+    "userId": "string",
+    "username": "string",
+    "timestamp": "ISO 8601 string",
+    "text": "string"
+  }
+]
+
+
+Error responses:
+
+401: { "message": "Authentication required" }
+
+403: { "message": "Not a participant" }
+
+404: { "message": "Event not found" }
+
+9) POST /events/:id/chat/messages
+
+Description: Creates a new message in the event chat.
+
+Request JSON body:
+
+{
+  "text": "string"
+}
+
+
+Successful response (201 Created):
+
+{
+  "id": "string",
+  "message": "Message created"
+}
+
+
+Error responses:
+
+400: { "message": "Validation failed", "errors": { "text": "Message cannot be empty" } }
+
+401: { "message": "Authentication required" }
+
+403: { "message": "Not a participant" }
+
+404: { "message": "Event not found" }
+
+10) WS /events/:id/chat (optional, recommended)
+
+Description: WebSocket channel for real-time chat updates.
+
+Behavior:
+
+When connected, the server sends:
+
+{
+  "type": "message",
+  "data": {
+    "id": "string",
+    "userId": "string",
+    "username": "string",
+    "timestamp": "ISO string",
+    "text": "string"
+  }
+}
+
+
+Clients send new messages through WebSocket using:
+
+{
+  "type": "send",
+  "text": "string"
+}
+
+
+Error messages (WebSocket protocol):
+
+{ "type": "error", "message": "Authentication required" }
+
+{ "type": "error", "message": "Not a participant" }
+
+{ "type": "error", "message": "Invalid payload" }
+
+11) Storage and retention notes (backend expectations)
+
+Messages should be stored in a persistent database (e.g. PostgreSQL or MongoDB).
+
+Recommended schema:
+
+ChatMessage:
+  id: string
+  eventId: string
+  userId: string
+  username: string
+  timestamp: datetime
+  text: string
  #### 13) Upload and get profile image
 
 - POST /profile/{userId}/avatar
