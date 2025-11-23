@@ -5,9 +5,13 @@ import com.example.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;   
 
+import java.nio.file.*;                                    
+import java.io.IOException;                                
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;                                     
 
 @RestController
 @RequestMapping("/profile")
@@ -94,4 +98,42 @@ public class ConfigurarPerfilController {
                 .body(Map.of("message", "Error processing request"));
         }
     }
-}
+
+         
+    
+        @PostMapping("/{userId}/avatar")
+        public ResponseEntity<?> uploadAvatar(
+                @PathVariable Long userId, 
+                @RequestParam("avatar") MultipartFile file) {
+            
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "File is empty"));
+            }
+    
+            try {
+                User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+    
+                String uploadDir = "uploads/avatars/";
+                Files.createDirectories(Paths.get(uploadDir));
+    
+                String filename = userId + "_" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+                Path filePath = Paths.get(uploadDir + filename);
+                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+    
+                String fileUrl = "http://localhost:8080/uploads/avatars/" + filename;
+    
+                user.setProfileImage(fileUrl);
+                userRepository.save(user);
+    
+                return ResponseEntity.ok(Map.of("profileImage", fileUrl));
+    
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error uploading file"));
+            } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
+            }
+        }  
+    }   
