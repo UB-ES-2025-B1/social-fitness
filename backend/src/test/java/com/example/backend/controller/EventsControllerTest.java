@@ -42,7 +42,7 @@ class EventsControllerTest {
 
   @Test
   void join_returns200_withMessage() throws Exception {
-    doNothing().when(service).join(any(Long.class), any(Long.class));
+    doNothing().when(service).join(1L);
 
     mvc.perform(post("/events/1/join")
         .with(csrf()))
@@ -52,7 +52,7 @@ class EventsControllerTest {
 
   @Test
   void leave_returns200_whenOk() throws Exception {
-    doNothing().when(service).leave(any(Long.class), any(Long.class));
+    doNothing().when(service).leave(2L);
 
     mvc.perform(post("/events/2/leave")
         .with(csrf()))
@@ -62,7 +62,7 @@ class EventsControllerTest {
 
   @Test
   void leave_returns400_whenIllegalState() throws Exception {
-    doThrow(new IllegalStateException("Not a participant")).when(service).leave(any(Long.class), any(Long.class));
+    doThrow(new IllegalStateException("Not a participant")).when(service).leave(3L);
 
     mvc.perform(post("/events/3/leave")
         .with(csrf()))
@@ -85,7 +85,7 @@ class EventsControllerTest {
     Event saved = in;
     saved.setId(123L);
 
-    when(service.create(any(Event.class), any(Long.class))).thenReturn(saved);
+    when(service.create(any())).thenReturn(saved);
 
     String json = mapper.writeValueAsString(in);
 
