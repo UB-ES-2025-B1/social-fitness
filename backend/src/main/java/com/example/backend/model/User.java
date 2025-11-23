@@ -7,6 +7,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;   
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
+import java.util.HashSet;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Entity
 @Table(name = "users",
@@ -43,6 +48,10 @@ public class User implements UserDetails {
   @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamp default CURRENT_TIMESTAMP")
   private LocalDateTime createdAt;
 
+  @JsonIgnore // Evita bucles infinitos al convertir a JSON
+  @ManyToMany(mappedBy = "participantUsers")
+  private Set<Event> joinedEvents = new HashSet<>();
+
   @PrePersist
   protected void onCreate() {
     createdAt = LocalDateTime.now();
@@ -63,6 +72,8 @@ public class User implements UserDetails {
   public String getBio() { return bio; }
   public String getProfileImage() { return profileImage; }
   public LocalDateTime getCreatedAt() { return createdAt; }
+  public Set<Event> getJoinedEvents() { return joinedEvents;}
+
 
 
   public void setId(Long id) { this.id = id; }
@@ -73,12 +84,14 @@ public class User implements UserDetails {
   public void setBio(String bio) { this.bio = bio; }
   public void setProfileImage(String profileImage) { this.profileImage = profileImage; }
   public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setJoinedEvents(Set<Event> joinedEvents) {this.joinedEvents = joinedEvents;}
 
   // Métodos requeridos por UserDetails
-  @Override
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    return Collections.emptyList(); 
-  }
+@Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Devuelve un rol por defecto para que Spring permita acceso
+        return List.of(new SimpleGrantedAuthority("ROLE_USER")); 
+    }
 
   @Override
   public boolean isAccountNonExpired() {

@@ -285,3 +285,51 @@ ChatMessage:
   username: string
   timestamp: datetime
   text: string
+ #### 13) Upload and get profile image
+
+- POST /profile/{userId}/avatar
+
+  Upload the user's profile picture.
+
+  **Request:** multipart/form-data
+  
+  **Field:** avatar — required, must be image
+
+  Example (curl): 
+      
+      curl -X POST http://localhost:8080/profile/1/avatar \-F "avatar=@/path/to/file.png"
+
+    Response (200):
+    
+      {"profileImage": "http://localhost:8080/uploads/avatars/1.png"}
+      
+  **Backend expectations:**
+  
+  - Save the uploaded file (e.g., under /uploads/avatars/)
+  - Update the stored profile image URL.
+  - Return the public URL in profileImage.
+  - GET /users/{userId} must include the updated profileImage.
+
+  **Error responses:**
+  - 400 — missing file or invalid type
+  - 403 — wrong user
+  - 413 — file too large
+  - 415 — unsupported media type
+
+-  GET /users/{userId}
+
+Returns profile information from a user.
+
+**Auth:** requieres an authenticated user
+
+**Response 200 OK**
+
+```json
+{
+  "id": "123",
+  "username": "sportsenthusiast",
+  "email": "athlete@example.com",
+  "profileImage": "null", //por defecto
+  "sports": "[{\"id\":\"football\",\"level\":\"beginner\"},{\"id\":\"tennis\",\"level\":\"advanced\"}]",
+  "bio":null
+}

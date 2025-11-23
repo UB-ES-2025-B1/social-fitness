@@ -8,6 +8,11 @@ async function request(path, { method = 'GET', body, headers = {}, credentials =
   const url = API_BASE + path
   console.log(`[API] ${method} ->`, url); 
 
+  const userId = localStorage.getItem('userId');
+  if (userId && !path.startsWith('/auth/')) {
+    headers['User-ID'] = userId; // Añadimos la cabecera que espera el backend
+  }
+
   const opts = {
     method,
     headers: {

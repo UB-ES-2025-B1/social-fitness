@@ -8,7 +8,7 @@ export default defineConfig({
     tailwindcss(),
   ],
   test: {
-    environment: 'jsdom',
+    environment: 'happy-dom',
     setupFiles: './src/setupTests.js',
     globals: true,
     css: true, // permite importar CSS en tests
