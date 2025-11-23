@@ -9,7 +9,7 @@ class CustomWorld extends World {
     this.apiError = null;
     this.userData = {};
     
-    // Create a cookie jar to maintain session across requests
+    // Set up cookie jar so we can stay logged in between requests
     this.cookieJar = new CookieJar();
     this.fetch = fetchCookie(fetch, this.cookieJar);
   }
@@ -21,7 +21,7 @@ class CustomWorld extends World {
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include', // Important for cookies
+      credentials: 'include',
     };
 
     if (data) {
@@ -32,7 +32,7 @@ class CustomWorld extends World {
       const response = await this.fetch(`${baseUrl}${endpoint}`, options);
       const responseData = await response.json().catch(() => ({}));
       
-      // Log errors for debugging
+      // Show errors in the console to help with debugging
       if (response.status >= 400 && responseData.message) {
         console.log(`API Error (${response.status}): ${responseData.message}`, responseData.errors || '');
       }

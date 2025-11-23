@@ -13,15 +13,15 @@ Given('I am a new user', function () {
 Given('I am a registered user with email {string}', async function (email) {
   const timestamp = Date.now();
   this.userData = {
-    email: `test${timestamp}@example.com`, // Use unique email too
-    password: 'ValidPass123',  // Use the same password that the feature file expects
+    email: `test${timestamp}@example.com`,
+    password: 'ValidPass123',
     username: `testuser${timestamp}`,
   };
   
-  // Register the user first
+  // Register this user so they exist in the database
   await this.makeApiRequest('POST', '/auth/register', this.userData);
   
-  // Wait a bit for registration to complete
+  // Give it a moment to finish
   await new Promise(resolve => setTimeout(resolve, 100));
 });
 
@@ -33,12 +33,12 @@ Given('I am a registered user', async function () {
     username: `existinguser${timestamp}`,
   };
   
-  // Register the user first
+  // Set up a registered user for testing login
   await this.makeApiRequest('POST', '/auth/register', this.userData);
 });
 
 When('I register with email {string} and password {string}', async function (email, password) {
-  // Make email unique to avoid "already taken" errors
+  // Use a unique email each time to avoid conflicts
   const timestamp = Date.now();
   this.userData.email = `test${timestamp}@example.com`;
   this.userData.password = password;

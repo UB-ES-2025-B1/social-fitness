@@ -19,8 +19,8 @@ frontend/
 │   │   ├── events.steps.js
 │   │   └── profile.steps.js
 │   └── support/
-│       └── world.js              # Custom World configuration
-└── package.json                  # Added Cucumber scripts
+│       └── world.js              # Cookie jar for session management
+└── package.json                  # Cucumber scripts + cookie deps
 ```
 
 ### Backend (Java/Spring Boot)
@@ -197,6 +197,40 @@ export default {
 
 **Test Runner** (`CucumberIntegrationTest.java`):
 Uses JUnit Platform Suite with Cucumber engine to discover and run feature files.
+
+---
+
+## 🔐 Session Management
+
+### Frontend Session Handling
+
+The frontend tests use **tough-cookie** and **fetch-cookie** to maintain authentication sessions across requests. This is essential for testing authenticated endpoints.
+
+**How it works:**
+1. Each test scenario gets its own cookie jar (via `world.js`)
+2. When a user logs in, the session cookie is automatically stored
+3. All subsequent requests include the session cookie
+4. Tests can interact with protected endpoints as an authenticated user
+
+**Example:**
+```javascript
+// Login establishes a session
+Given('I am logged in as a user', async function () {
+  await this.makeApiRequest('POST', '/auth/register', userData);
+  await this.makeApiRequest('POST', '/auth/login', credentials);
+  // Session cookie is now stored in this.cookieJar
+});
+
+// Later requests automatically include the cookie
+When('I join the event', async function () {
+  await this.makeApiRequest('POST', `/events/${eventId}/join`, {});
+  // This works because we're still authenticated
+});
+```
+
+### Backend Session Handling
+
+The backend tests use **Apache HttpClient5** with a `BasicCookieStore` (configured in `TestRestTemplateConfig.java`) to maintain sessions across Cucumber steps.
 
 ---
 

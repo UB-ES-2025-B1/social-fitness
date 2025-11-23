@@ -2,7 +2,7 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import assert from 'assert';
 
 Given('I am logged in as a user', async function () {
-  // Register a test user to ensure it exists
+  // Create our test user if they don't exist yet
   const userData = {
     email: 'loggeduser@example.com',
     username: 'loggeduser',
@@ -12,10 +12,10 @@ Given('I am logged in as a user', async function () {
   try {
     await this.makeApiRequest('POST', '/auth/register', userData);
   } catch (error) {
-    // User might already exist, that's fine
+    // No worries if the user already exists from a previous test
   }
   
-  // Actually login to establish a session
+  // Log in to get our session cookie
   await this.makeApiRequest('POST', '/auth/login', {
     username: userData.username,
     password: userData.password,
@@ -25,7 +25,7 @@ Given('I am logged in as a user', async function () {
 });
 
 Given('there is an available event {string}', async function (eventName) {
-  // Create a real event in the database
+  // Set up a test event for our scenario
   const eventData = {
     title: eventName,
     sport: 'Yoga',
@@ -37,7 +37,7 @@ Given('there is an available event {string}', async function (eventName) {
   };
   
   await this.makeApiRequest('POST', '/events', eventData);
-  // Get the event ID from the response
+  // Save the event ID so we can use it in later steps
   const eventId = this.apiResponse.data?.id || 1;
   
   this.availableEvent = {
@@ -49,7 +49,7 @@ Given('there is an available event {string}', async function (eventName) {
 });
 
 Given('I have joined an event {string}', async function (eventName) {
-  // Create event and join it
+  // Create an event and join it right away
   const eventData = {
     title: eventName,
     sport: 'Basketball',
@@ -63,7 +63,7 @@ Given('I have joined an event {string}', async function (eventName) {
   await this.makeApiRequest('POST', '/events', eventData);
   const eventId = this.apiResponse.data?.id || 2;
   
-  // Join the event
+  // Now join the event we just created
   await this.makeApiRequest('POST', `/events/${eventId}/join`, {});
   
   this.joinedEvent = {
@@ -84,13 +84,13 @@ Given('there are multiple events for different sports', function () {
 When('I create an event with the following details:', async function (dataTable) {
   const eventData = {};
   
-  // Parse the data table - it's in format [[key, value], ...]
+  // Pull the event details from the Gherkin table
   const rows = dataTable.rawTable;
   rows.forEach(([key, value]) => {
     eventData[key] = value;
   });
   
-  // Add required fields if missing
+  // Fill in any missing fields with sensible defaults
   if (!eventData.time) eventData.time = '10:00';
   if (!eventData.organizer) eventData.organizer = 'testuser';
   
@@ -137,10 +137,10 @@ Then('the event should not appear in my joined events', function () {
 
 Then('I should see only tennis-related events', function () {
   assert.strictEqual(this.apiResponse.status, 200, 'Expected 200 status for search');
-  // In a real implementation, you would verify the response contains only tennis events
+  // TODO: Add assertion to check that only tennis events are returned
 });
 
 Then('other sports events should be filtered out', function () {
-  // Verification that non-tennis events are not in the response
+  // This step verifies the filter actually worked
   assert.ok(this.apiResponse.data, 'Expected filtered event list');
 });

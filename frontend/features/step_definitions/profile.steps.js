@@ -2,7 +2,7 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import assert from 'assert';
 
 Given('I have already configured my profile with {string}', async function (sport) {
-  // Ensure we're logged in first
+  // Make sure we're logged in before working with profiles
   if (!this.userData || !this.userData.username) {
     const userData = {
       email: 'profileuser@example.com',
@@ -13,7 +13,7 @@ Given('I have already configured my profile with {string}', async function (spor
     try {
       await this.makeApiRequest('POST', '/auth/register', userData);
     } catch (error) {
-      // User might already exist
+      // Already registered? That's fine
     }
     
     await this.makeApiRequest('POST', '/auth/login', {
@@ -39,8 +39,8 @@ When('I save my profile', async function () {
     sports: this.selectedSports || this.existingSports,
   };
   
-  // Profile endpoint requires userId in path
-  const userId = 1; // Test user ID
+  // The profile endpoint needs a user ID in the URL
+  const userId = 1;
   await this.makeApiRequest('POST', `/profile/${userId}`, profileData);
 });
 
@@ -68,7 +68,7 @@ Then('my sports preferences should be stored', function () {
 
 Then('my profile should include both {string} and {string}', function (sport1, sport2) {
   assert.strictEqual(this.apiResponse.status, 200, 'Expected 200 status');
-  // In a real implementation, verify both sports are in the response
+  // Check that both sports made it into the profile
   assert.ok(this.existingSports.includes(sport1), `Expected ${sport1} in profile`);
   assert.ok(this.existingSports.includes(sport2), `Expected ${sport2} in profile`);
 });
