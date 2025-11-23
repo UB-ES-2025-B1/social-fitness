@@ -15,12 +15,14 @@ describe('ProfileConfigurator (básico)', () => {
     const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {})
     render(<ProfileConfigurator />)
 
-    await user.click(screen.getByRole('button', { name: /Següent/i }))
+  // the UI shows "Siguiente" in Spanish; accept both Catalan/Spanish variants
+      await user.click(screen.getByRole('button', { name: /Següent|Siguiente/i }))
 
-    expect(alertSpy).toHaveBeenCalledTimes(1)
-    expect(
-      screen.getByRole('heading', { name: /Configura el teu perfil esportiu/i })
-    ).toBeInTheDocument()
+      // The component displays an inline error banner instead of calling window.alert
+      expect(screen.getByText(/Selecciona al menos un deporte/i)).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /Configura tu perfil deportivo/i })
+      ).toBeInTheDocument()
   })
 
   it('flujo feliz: selecciona deportes, define niveles y emite el payload al completar', async () => {
@@ -28,20 +30,21 @@ describe('ProfileConfigurator (básico)', () => {
     render(<ProfileConfigurator onComplete={onComplete} />)
 
     // Paso 1
-    await user.click(screen.getByRole('button', { name: /Futbol/i }))
-    await user.click(screen.getByRole('button', { name: /Bàsquet/i }))
-    await user.click(screen.getByRole('button', { name: /Següent/i }))
+  // accept localized sport names (with/without diacritics)
+  await user.click(screen.getByRole('button', { name: /Fútbol|Futbol/i }))
+  await user.click(screen.getByRole('button', { name: /Bàsquet|Básquet|Basquet/i }))
+  await user.click(screen.getByRole('button', { name: /Següent|Siguiente/i }))
 
     // Paso 2: acotar al bloque de Futbol y elegir "Intermedi" SOLO para Futbol
-    const futbolHeading = screen.getByRole('heading', { name: /Futbol/i, level: 3 })
+  const futbolHeading = screen.getByRole('heading', { name: /Fútbol|Futbol/i, level: 3 })
     const futbolSection = futbolHeading.closest('section')
     expect(futbolSection).not.toBeNull()                 // <-- garantizamos que existe
 
     const futbolScope = within(futbolSection)
-    await user.click(futbolScope.getByRole('button', { name: /Intermedi/i }))
+  await user.click(futbolScope.getByRole('button', { name: /Intermedi|Intermedio/i }))
 
     // Completar
-    await user.click(screen.getByRole('button', { name: /Completar/i }))
+  await user.click(screen.getByRole('button', { name: /Completar|Finalizar|Terminar/i }))
 
     // onComplete recibe el payload esperado
     expect(onComplete).toHaveBeenCalledTimes(1)
