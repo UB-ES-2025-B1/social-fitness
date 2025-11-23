@@ -11,6 +11,9 @@ import com.example.backend.dto.UserResponse;
 import com.example.backend.service.AuthService;
 
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 @RestController
 @RequestMapping("/auth")
@@ -30,8 +33,14 @@ public class AuthController {
   }
 
 @PostMapping("/login")
-  public ResponseEntity<?> login(@Valid @RequestBody LoginRequest body) {
-      UserResponse user = authService.login(body);
-      return ResponseEntity.ok(Map.of("user", user, "message", "Login successful"));
+  public ResponseEntity<?> login(@Valid @RequestBody LoginRequest body, HttpServletRequest request) {
+    UserResponse user = authService.login(body);
+    // Ensure the SecurityContext is stored in the HTTP session so the browser receives JSESSIONID
+    try {
+      var session = request.getSession(true);
+      session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+    } catch (Exception ignore) {// ignore session issues
+    }
+    return ResponseEntity.ok(Map.of("user", user, "message", "Login successful"));
   }
 }

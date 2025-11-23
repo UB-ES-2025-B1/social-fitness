@@ -8,17 +8,19 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/events")
 public class EventsController {
 
   private final EventService service;
-  private final EventRepository repo;
+  private final com.example.backend.service.AuthService authService;
 
-  public EventsController(EventService service, EventRepository repo) {
+  public EventsController(EventService service, com.example.backend.service.AuthService authService/*, EventRepository repo*/) {
     this.service = service;
-    this.repo = repo;
+    this.authService = authService;
+    //this.repo = repo;
   }
 
   @GetMapping
@@ -40,32 +42,49 @@ public class EventsController {
 
   @PostMapping("/{id}/join")
   public ResponseEntity<?> join(@PathVariable Long id) {
-    service.join(id);
+  try {
+    // require authenticated user
+    com.example.backend.model.User user = authService.getCurrentAuthenticatedUser();
+    service.join(id, user.getId());
     return ResponseEntity.ok(Map.of("message", "Joined"));
+  } catch (EventService.EventFullException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", ex.getMessage()));
+  } catch (NoSuchElementException ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+  } catch (com.example.backend.service.AuthService.ValidationException | org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Authentication required"));
   }
+}
 
   @PostMapping("/{id}/leave")
   public ResponseEntity<?> leave(@PathVariable Long id) {
     try {
-      service.leave(id);
+      com.example.backend.model.User user = authService.getCurrentAuthenticatedUser();
+      service.leave(id, user.getId());
       return ResponseEntity.ok(Map.of("message", "Left"));
     } catch (IllegalStateException ex) {
-      return ResponseEntity.badRequest()
-              .body(Map.of("message", ex.getMessage()));
+      return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
+    } catch (com.example.backend.service.AuthService.ValidationException | org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Authentication required"));
     }
   }
 
   // 👉 NUEVO ENDPOINT PARA CREAR EVENTOS
   @PostMapping
-public ResponseEntity<?> create(@RequestBody Event e) {
-  try {
-      Event saved = service.create(e);
-      return ResponseEntity.status(HttpStatus.CREATED)
-              .body(Map.of("id", saved.getId(), "message", "Event created"));
-  } catch (EventService.ValidationException ex) {
-      return ResponseEntity.badRequest()
-              .body(Map.of("message", "Validation failed", "errors", ex.getErrors()));
+  public ResponseEntity<?> create(@RequestBody Event e) {
+    try {
+      Long userId = null;
+      try {
+        com.example.backend.model.User user = authService.getCurrentAuthenticatedUser();
+        userId = user.getId();
+      } catch (Exception ignore) { // not authenticated, proceed with provided organizer in payload
+      }
+
+      Event saved = service.create(e, userId);
+      return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", saved.getId(), "message", "Event created"));
+    } catch (EventService.ValidationException ex) {
+      return ResponseEntity.badRequest().body(Map.of("message", "Validation failed", "errors", ex.getErrors()));
+    }
   }
-}
 
 }
