@@ -180,108 +180,51 @@ Validation expectations (backend)
     - 400: { "message": "Not a participant" }
     - 401: { "message": "Authentication required" }
 
-8) GET /events/:id/chat/messages
+ #### 13) Upload and get profile image
 
-Description: Returns the full chat history for the event.
+- POST /profile/{userId}/avatar
 
-Request body: none
+  Upload the user's profile picture.
 
-Successful response (200):
+  **Request:** multipart/form-data
+  
+  **Field:** avatar — required, must be image
 
-[
-  {
-    "id": "string",
-    "userId": "string",
-    "username": "string",
-    "timestamp": "ISO 8601 string",
-    "text": "string"
-  }
-]
+  Example (curl): 
+      
+      curl -X POST http://localhost:8080/profile/1/avatar \-F "avatar=@/path/to/file.png"
 
+    Response (200):
+    
+      {"profileImage": "http://localhost:8080/uploads/avatars/1.png"}
+      
+  **Backend expectations:**
+  
+  - Save the uploaded file (e.g., under /uploads/avatars/)
+  - Update the stored profile image URL.
+  - Return the public URL in profileImage.
+  - GET /users/{userId} must include the updated profileImage.
 
-Error responses:
+  **Error responses:**
+  - 400 — missing file or invalid type
+  - 403 — wrong user
+  - 413 — file too large
+  - 415 — unsupported media type
 
-401: { "message": "Authentication required" }
+-  GET /users/{userId}
 
-403: { "message": "Not a participant" }
+Returns profile information from a user.
 
-404: { "message": "Event not found" }
+**Auth:** requieres an authenticated user
 
-9) POST /events/:id/chat/messages
+**Response 200 OK**
 
-Description: Creates a new message in the event chat.
-
-Request JSON body:
-
+```json
 {
-  "text": "string"
+  "id": "123",
+  "username": "sportsenthusiast",
+  "email": "athlete@example.com",
+  "profileImage": "null", //por defecto
+  "sports": "[{\"id\":\"football\",\"level\":\"beginner\"},{\"id\":\"tennis\",\"level\":\"advanced\"}]",
+  "bio":null
 }
-
-
-Successful response (201 Created):
-
-{
-  "id": "string",
-  "message": "Message created"
-}
-
-
-Error responses:
-
-400: { "message": "Validation failed", "errors": { "text": "Message cannot be empty" } }
-
-401: { "message": "Authentication required" }
-
-403: { "message": "Not a participant" }
-
-404: { "message": "Event not found" }
-
-10) WS /events/:id/chat (optional, recommended)
-
-Description: WebSocket channel for real-time chat updates.
-
-Behavior:
-
-When connected, the server sends:
-
-{
-  "type": "message",
-  "data": {
-    "id": "string",
-    "userId": "string",
-    "username": "string",
-    "timestamp": "ISO string",
-    "text": "string"
-  }
-}
-
-
-Clients send new messages through WebSocket using:
-
-{
-  "type": "send",
-  "text": "string"
-}
-
-
-Error messages (WebSocket protocol):
-
-{ "type": "error", "message": "Authentication required" }
-
-{ "type": "error", "message": "Not a participant" }
-
-{ "type": "error", "message": "Invalid payload" }
-
-11) Storage and retention notes (backend expectations)
-
-Messages should be stored in a persistent database (e.g. PostgreSQL or MongoDB).
-
-Recommended schema:
-
-ChatMessage:
-  id: string
-  eventId: string
-  userId: string
-  username: string
-  timestamp: datetime
-  text: string

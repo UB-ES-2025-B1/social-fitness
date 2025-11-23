@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import './profile.css'
-import { getProfile, saveProfile } from '../services/profile'
+import { getProfile, saveProfile, uploadAvatar } from '../services/profile' // NUEVO
 
 const SPORTS = [
   { id: 'football', label: 'Fútbol' },
@@ -17,6 +17,7 @@ const LEVEL_LABEL = {
   advanced: 'Avanzado',
   expert: 'Experto'
 }
+const DEFAULT_AVATAR = '/img/user-profile-icon-profile.png' // ruta de imagen por defecto
 
 function sportLabel(id) {
   return SPORTS.find(s => s.id === id)?.label || id
@@ -26,6 +27,10 @@ export default function Profile() {
   const [profile, setProfile] = useState([])
   const [username, setUsername] = useState(localStorage.getItem('username') || 'sportsenthusiast')
   const [email, setEmail] = useState(localStorage.getItem('email') || 'athlete@example.com')
+  const [avatarUrl, setAvatarUrl] = useState(DEFAULT_AVATAR)
+  const [avatarPreview, setAvatarPreview] = useState(null)
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -38,6 +43,7 @@ export default function Profile() {
         } catch (e) {
           setProfile([])
         }
+        setAvatarUrl(DEFAULT_AVATAR)
         return
       }
 
@@ -47,6 +53,12 @@ export default function Profile() {
           const d = res.data
           setUsername(d.username || username)
           setEmail(d.email || email)
+          if (d.avatarUrl) {
+            setAvatarUrl(d.avatarUrl)
+          } else {
+            setAvatarUrl(DEFAULT_AVATAR)
+          }
+
           // backend stores sports as JSON string in `sports` column
           if (d.sports) {
             try {
@@ -63,10 +75,12 @@ export default function Profile() {
     }
     load()
   }, [])
+
   // editing state and helpers
   const [editing, setEditing] = useState(false)
   const [savedMessage, setSavedMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+
   // profile is array of { id, level }
   function addSport(id) {
     if (!id) return
@@ -127,6 +141,7 @@ export default function Profile() {
       } catch (e) {
         setProfile([])
       }
+      setAvatarUrl(DEFAULT_AVATAR) 
       return
     }
 
@@ -136,6 +151,11 @@ export default function Profile() {
         const d = res.data
         setUsername(d.username || username)
         setEmail(d.email || email)
+        if (d.avatarUrl) {
+          setAvatarUrl(d.avatarUrl)
+        } else {
+          setAvatarUrl(DEFAULT_AVATAR)
+        }
         if (d.sports) {
           try {
             const parsed = JSON.parse(d.sports)
@@ -150,12 +170,91 @@ export default function Profile() {
     }
   }
 
+  function handleAvatarChange(event) {
+    const file = event.target.files && event.target.files[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setErrorMessage('El archivo debe ser una imagen')
+      setTimeout(() => setErrorMessage(''), 4000)
+      return
+    }
+
+    setAvatarFile(file)
+
+    // preview local
+    const previewUrl = URL.createObjectURL(file)
+    setAvatarPreview(previewUrl)
+  }
+
+  async function handleAvatarSave() {
+    if (!avatarFile) return
+    const userId = localStorage.getItem('userId')
+    if (!userId) {
+      setErrorMessage('Debes iniciar sesión para cambiar la foto de perfil')
+      setTimeout(() => setErrorMessage(''), 4000)
+      return
+    }
+
+    try {
+      setIsUploadingAvatar(true)
+      const res = await uploadAvatar(userId, avatarFile)
+      if (!res.ok || !res.data || !res.data.avatarUrl) {
+        throw new Error('Upload failed')
+      }
+      setAvatarUrl(res.data.avatarUrl)
+      setAvatarPreview(null)
+      setAvatarFile(null)
+      setSavedMessage('Foto de perfil actualizada')
+      setErrorMessage('')
+      setTimeout(() => setSavedMessage(''), 4000)
+    } catch (err) {
+      setErrorMessage('Error al subir la foto de perfil')
+      setSavedMessage('')
+      setTimeout(() => setErrorMessage(''), 4000)
+    } finally {
+      setIsUploadingAvatar(false)
+    }
+  }
+
   return (
     <div className="profile-root">
       <div className="profile-card">
-  <h2 className="profile-title">Perfil</h2>
+        <h2 className="profile-title">Perfil</h2>
         {savedMessage && <div className="banner success">{savedMessage}</div>}
         {errorMessage && <div className="banner error">{errorMessage}</div>}
+
+        {}
+        <div className="profile-avatar-section">
+          <div className="avatar-wrapper">
+            <img
+              src={avatarPreview || avatarUrl}
+              alt="Foto de perfil"
+              className="avatar-img"
+            />
+          </div>
+          <div className="avatar-actions">
+            <label className="btn-secondary">
+              Cambiar foto
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleAvatarChange}
+              />
+            </label>
+            {avatarFile && (
+              <button
+                className="btn-primary"
+                onClick={handleAvatarSave}
+                disabled={isUploadingAvatar}
+              >
+                {isUploadingAvatar ? 'Guardando...' : 'Guardar foto'}
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="profile-info">
           <label className="label">Nombre de usuario</label>
           <input className="profile-input" value={username} readOnly />

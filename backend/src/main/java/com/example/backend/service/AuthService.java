@@ -7,9 +7,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContext; 
+import org.springframework.security.core.context.SecurityContextHolder; 
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.backend.dto.LoginRequest;
 import com.example.backend.dto.RegisterRequest;
@@ -50,14 +54,20 @@ public class AuthService {
 
 public UserResponse login(LoginRequest req) {
     try {
-      authenticationManager.authenticate(
+      Authentication authentication = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
       );
 
       // Buscar el usuario en la base de datos
-      User user = userRepository.findByUsername(req.getUsername())
-          .orElseThrow(() -> new ValidationException(Map.of("username", "User not found")));
+      //User user = userRepository.findByUsername(req.getUsername())
+        //  .orElseThrow(() -> new ValidationException(Map.of("username", "User not found")));
 
+      // Spring creará la cookie de sesión (JSESSIONID) para este usuario.
+      SecurityContext context = SecurityContextHolder.createEmptyContext();
+      context.setAuthentication(authentication);
+      SecurityContextHolder.setContext(context);
+      
+      User user = (User) authentication.getPrincipal();
       return new UserResponse(user.getId().toString(), user.getUsername(), user.getEmail());
 
     } catch (BadCredentialsException e) {
@@ -69,6 +79,28 @@ public UserResponse login(LoginRequest req) {
       throw new ValidationException(Map.of("general", "Invalid credentials"));
     }
   }
+
+  public User getCurrentAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        // Comprobar si es un usuario anónimo o no autenticado
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new UsernameNotFoundException("No user is currently authenticated");
+        }
+        
+        // Obtener el nombre de usuario
+        String username;
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else {
+            username = principal.toString(); // Fallback
+        }
+        
+        // Buscar en la BBDD
+        return userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found in repository"));
+    }
 
   // Excepción de validación simple para mapear a 400 con { message, errors }
   public static class ValidationException extends RuntimeException {
