@@ -1,4 +1,6 @@
 import { setWorldConstructor, World } from '@cucumber/cucumber';
+import { CookieJar } from 'tough-cookie';
+import fetchCookie from 'fetch-cookie';
 
 class CustomWorld extends World {
   constructor(options) {
@@ -6,6 +8,10 @@ class CustomWorld extends World {
     this.apiResponse = null;
     this.apiError = null;
     this.userData = {};
+    
+    // Create a cookie jar to maintain session across requests
+    this.cookieJar = new CookieJar();
+    this.fetch = fetchCookie(fetch, this.cookieJar);
   }
 
   async makeApiRequest(method, endpoint, data = null) {
@@ -15,6 +21,7 @@ class CustomWorld extends World {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // Important for cookies
     };
 
     if (data) {
@@ -22,7 +29,7 @@ class CustomWorld extends World {
     }
 
     try {
-      const response = await fetch(`${baseUrl}${endpoint}`, options);
+      const response = await this.fetch(`${baseUrl}${endpoint}`, options);
       const responseData = await response.json().catch(() => ({}));
       
       // Log errors for debugging

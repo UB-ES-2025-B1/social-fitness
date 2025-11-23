@@ -1,7 +1,29 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import assert from 'assert';
 
-Given('I have already configured my profile with {string}', function (sport) {
+Given('I have already configured my profile with {string}', async function (sport) {
+  // Ensure we're logged in first
+  if (!this.userData || !this.userData.username) {
+    const userData = {
+      email: 'profileuser@example.com',
+      username: 'profileuser',
+      password: 'TestPass123',
+    };
+    
+    try {
+      await this.makeApiRequest('POST', '/auth/register', userData);
+    } catch (error) {
+      // User might already exist
+    }
+    
+    await this.makeApiRequest('POST', '/auth/login', {
+      username: userData.username,
+      password: userData.password,
+    });
+    
+    this.userData = userData;
+  }
+  
   this.existingSports = [sport];
 });
 

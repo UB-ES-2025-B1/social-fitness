@@ -15,8 +15,13 @@ Given('I am logged in as a user', async function () {
     // User might already exist, that's fine
   }
   
+  // Actually login to establish a session
+  await this.makeApiRequest('POST', '/auth/login', {
+    username: userData.username,
+    password: userData.password,
+  });
+  
   this.userData = userData;
-  this.userData.token = 'mock-auth-token';
 });
 
 Given('there is an available event {string}', async function (eventName) {
