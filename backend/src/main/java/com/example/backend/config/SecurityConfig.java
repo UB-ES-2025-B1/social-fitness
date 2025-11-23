@@ -51,6 +51,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/events").permitAll()
                     .requestMatchers(HttpMethod.GET, "/events/*").permitAll()
+                    .requestMatchers("/uploads/**").permitAll()  
+                    .requestMatchers("/events/*/chat/**").permitAll()   
                     .anyRequest().authenticated() 
                 );
         }

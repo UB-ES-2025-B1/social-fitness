@@ -5,6 +5,11 @@ postgresql/
 backend/target/
 backend/.mvn/
 
+#  Uploads de usuarios (avatares)
+backend/uploads/
+backend/src/main/resources/static/uploads/
+
+
 # Logs
 *.log
 backend/logs/
