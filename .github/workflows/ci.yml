@@ -92,7 +92,7 @@ jobs:
       - name: Start backend server
         working-directory: backend
         run: |
-          nohup mvn spring-boot:run -Dspring-boot.run.profiles=dev > backend.log 2>&1 &
+          nohup mvn spring-boot:run -Dspring-boot.run.profiles=test > backend.log 2>&1 &
           echo $! > backend.pid
           echo "Backend starting... Waiting for health check"
           
