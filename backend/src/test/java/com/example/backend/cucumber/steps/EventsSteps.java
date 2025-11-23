@@ -24,10 +24,7 @@ public class EventsSteps extends CucumberSpringConfiguration {
 
     @Given("I am authenticated as a user")
     public void iAmAuthenticatedAsAUser() {
-        // Note: The backend has all endpoints configured as permitAll() in SecurityConfig
-        // So no actual JWT authentication is required. This step ensures a user exists
-        // in the database for testing purposes.
-        
+        // Register and login to establish a session
         String testEmail = "testuser@example.com";
         String testPassword = "TestPass123";
         String testUsername = "testuser";
@@ -48,7 +45,21 @@ public class EventsSteps extends CucumberSpringConfiguration {
             // User might already exist, that's fine
         }
         
-        // No JWT token needed - backend allows all requests via permitAll()
+        // Login to create a session
+        Map<String, String> loginData = new HashMap<>();
+        loginData.put("username", testUsername);
+        loginData.put("password", testPassword);
+
+        HttpHeaders loginHeaders = new HttpHeaders();
+        loginHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Map<String, String>> loginRequest = new HttpEntity<>(loginData, loginHeaders);
+        
+        try {
+            restTemplate.postForEntity(getBaseUrl() + "/auth/login", loginRequest, Map.class);
+            // Session cookie will be automatically maintained by TestRestTemplate
+        } catch (Exception e) {
+            System.err.println("Login failed: " + e.getMessage());
+        }
     }
 
     @Given("an event exists with id {int}")
