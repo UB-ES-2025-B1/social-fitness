@@ -92,14 +92,23 @@ jobs:
       - name: Start backend server
         working-directory: backend
         run: |
-          mvn spring-boot:run -Dspring-boot.run.profiles=dev &
-          echo "Waiting for backend to start..."
-          for i in {1..30}; do
-            if curl -s http://localhost:8080/actuator/health > /dev/null; then
-              echo "Backend is ready!"
+          nohup mvn spring-boot:run -Dspring-boot.run.profiles=dev > backend.log 2>&1 &
+          echo $! > backend.pid
+          echo "Backend starting... Waiting for health check"
+          
+          # Wait up to 120 seconds for backend to be ready
+          for i in {1..60}; do
+            if curl -f -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
+              echo "✓ Backend is ready!"
+              curl -s http://localhost:8080/actuator/health
               break
             fi
-            echo "Waiting... ($i/30)"
+            if [ $i -eq 60 ]; then
+              echo "✗ Backend failed to start in time"
+              cat backend.log
+              exit 1
+            fi
+            echo "Waiting for backend... ($i/60)"
             sleep 2
           done
       
@@ -108,3 +117,11 @@ jobs:
         run: npm run test:bdd
         env:
           API_BASE_URL: http://localhost:8080
+      
+      - name: Stop backend server
+        if: always()
+        working-directory: backend
+        run: |
+          if [ -f backend.pid ]; then
+            kill $(cat backend.pid) || true
+          fi
