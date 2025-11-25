@@ -202,7 +202,8 @@ export default function Profile() {
       if (!res.ok || !res.data || !res.data.avatarUrl) {
         throw new Error('Upload failed')
       }
-      setAvatarUrl(res.data.avatarUrl)
+      const newUrl = res.data.avatarUrl || res.data.profileImage
+      setAvatarUrl(newUrl)
       setAvatarPreview(null)
       setAvatarFile(null)
       setSavedMessage('Foto de perfil actualizada')

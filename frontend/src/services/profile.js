@@ -2,13 +2,22 @@ import { request } from './api'
 
 // Save profile for a given userId. Backend expects POST /profile/{userId}
 async function saveProfile(userId, { sports, bio, profileImage } = {}) {
-  // `sports` is an array like: [{ id: 'football', level: 'intermediate' }, ...]
-  return request(`/profile/${userId}`, { method: 'POST', body: { sports, bio, profileImage } })
+  const res = await request(`/profile/${userId}`, { method: 'POST', body: { sports, bio, profileImage } })
+  // normalize backend key -> frontend expected key
+  if (res && res.data && res.data.profileImage && !res.data.avatarUrl) {
+    res.data.avatarUrl = res.data.profileImage
+  }
+  return res
 }
 
 // Fetch user profile via users endpoint (backend provides GET /users/{userId})
 async function getProfile(userId) {
-  return request(`/users/${userId}`, { method: 'GET' })
+  const res = await request(`/users/${userId}`, { method: 'GET' })
+  // normalize backend key -> frontend expected key
+  if (res && res.data && res.data.profileImage && !res.data.avatarUrl) {
+    res.data.avatarUrl = res.data.profileImage
+  }
+  return res
 }
 
 
@@ -31,6 +40,10 @@ async function uploadAvatar(userId, file) {
   const text = await res.text()
   let data
   try { data = text ? JSON.parse(text) : null } catch (err) { data = text }
+
+  if (data && data.profileImage && !data.avatarUrl) {
+    data = { ...data, avatarUrl: data.profileImage }
+  }
 
   return { ok: res.ok, status: res.status, data }
 }
