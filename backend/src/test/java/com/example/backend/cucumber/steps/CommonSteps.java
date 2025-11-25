@@ -4,6 +4,7 @@ import com.example.backend.cucumber.CucumberSpringConfiguration;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.Given;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
@@ -25,6 +26,7 @@ public class CommonSteps extends CucumberSpringConfiguration {
 
     private ResponseEntity<?> response;
     private String authToken;
+    private Long currentUserId;
 
     public void setAuthToken(String token) {
         this.authToken = token;
@@ -109,5 +111,38 @@ public class CommonSteps extends CucumberSpringConfiguration {
         int actualStatus = response.getStatusCode().value();
         assertTrue(actualStatus == statusCode1 || actualStatus == statusCode2,
             "Expected status code " + statusCode1 + " or " + statusCode2 + " but got " + actualStatus);
+    }
+    @Given("I am an authenticated user")
+    public void iAmAnAuthenticatedUser() {
+        // Create and authenticate a test user
+        String testUsername = "testuser_" + System.currentTimeMillis();
+        String testEmail = testUsername + "@example.com";
+        String testPassword = "TestPass123";
+        
+        // Register the user
+        Map<String, Object> registerData = new HashMap<>();
+        registerData.put("username", testUsername);
+        registerData.put("email", testEmail);
+        registerData.put("password", testPassword);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Map<String, Object>> registerRequest = new HttpEntity<>(registerData, headers);
+        
+        restTemplate.postForEntity(getBaseUrl() + "/auth/register", registerRequest, String.class);
+        
+        // Login to get the auth token
+        Map<String, Object> loginData = new HashMap<>();
+        loginData.put("username", testUsername);
+        loginData.put("password", testPassword);
+        
+        HttpEntity<Map<String, Object>> loginRequest = new HttpEntity<>(loginData, headers);
+        ResponseEntity<Map> loginResponse = restTemplate.postForEntity(getBaseUrl() + "/auth/login", loginRequest, Map.class);
+        
+        if (loginResponse.getBody() != null && loginResponse.getBody().containsKey("token")) {
+            this.authToken = (String) loginResponse.getBody().get("token");
+            Object userIdObj = loginResponse.getBody().get("id");
+            this.currentUserId = userIdObj instanceof Integer ? ((Integer) userIdObj).longValue() : (Long) userIdObj;
+        }
     }
 }
