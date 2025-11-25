@@ -100,7 +100,7 @@ describe('EventExplorer (básico)', () => {
     // se vuelve a pedir a la API con los filtros aplicados
     expect(listEvents).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        sports: expect.arrayContaining(['Fútbol']),
+        sports: expect.arrayContaining(['football']),
         location: 'Barcelona',
       })
     )

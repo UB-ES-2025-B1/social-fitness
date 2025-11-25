@@ -1,6 +1,15 @@
 import React, { useMemo, useState } from 'react'
 
-const SPORTS = ['Fútbol','Básquet','Tenis','Running','Natación','Volleyball']
+
+const SPORTS = [
+  { id: 'football', label: 'Fútbol' },
+  { id: 'basketball', label: 'Básquet' },
+  { id: 'tennis', label: 'Tenis' },
+  { id: 'running', label: 'Running' },
+  { id: 'swimming', label: 'Natación' },
+  { id: 'volleyball', label: 'Volleyball' },
+]
+
 const DAYS = [
   { id: 'mon', label: 'L' },
   { id: 'tue', label: 'M' },
@@ -28,13 +37,17 @@ export default function EventFilterModal({ open, initialFilters, onClose, onAppl
 
   function toggleSport(s) {
     setSports(prev => {
-      const next = new Set(prev); next.has(s) ? next.delete(s) : next.add(s); return next
+      const next = new Set(prev)
+      next.has(s) ? next.delete(s) : next.add(s)
+      return next
     })
   }
 
   function toggleDay(id) {
     setDays(prev => {
-      const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
     })
   }
 
@@ -51,7 +64,13 @@ export default function EventFilterModal({ open, initialFilters, onClose, onAppl
             <div className="label">Deportes</div>
             <div className="chip-row">
               {SPORTS.map(s => (
-                <button key={s} className={`chip ${sports.has(s) ? 'active' : ''}`} onClick={() => toggleSport(s)}>{s}</button>
+                <button
+                  key={s.id}
+                  className={`chip ${sports.has(s.id) ? 'active' : ''}`}
+                  onClick={() => toggleSport(s.id)}
+                >
+                  {s.label}
+                </button>
               ))}
             </div>
           </div>
@@ -86,7 +105,7 @@ export default function EventFilterModal({ open, initialFilters, onClose, onAppl
         </div>
 
         <div className="modal-actions">
-          <button className="btn-ghost" onClick={() => onClear?.()}>Limpiar filtros</button>
+          <button className="btn-ghost" onClick={() => { setSports(new Set()); setLocation(''); setDays(new Set()); setTimeFrom(''); setTimeTo(''); onClear?.() }}>Limpiar filtros</button>
           <button className="btn-primary" onClick={() => onApply?.(filters)}>Guardar</button>
         </div>
       </div>

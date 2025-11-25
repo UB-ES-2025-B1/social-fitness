@@ -7,8 +7,12 @@ import com.example.backend.service.EventService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/events")
@@ -20,7 +24,7 @@ public class EventsController {
   public EventsController(EventService service, com.example.backend.service.AuthService authService/*, EventRepository repo*/) {
     this.service = service;
     this.authService = authService;
-    //this.repo = repo;
+
   }
 
   @GetMapping
@@ -37,7 +41,11 @@ public class EventsController {
 
   @GetMapping("/{id}")
   public ResponseEntity<?> detail(@PathVariable Long id) {
-    return ResponseEntity.ok(service.detail(id));
+    try {
+        return ResponseEntity.ok(service.detail(id));
+    } catch (NoSuchElementException e) {
+        return ResponseEntity.status(404).body(Map.of("message", "Event not found"));
+    }
   }
 
   @PostMapping("/{id}/join")

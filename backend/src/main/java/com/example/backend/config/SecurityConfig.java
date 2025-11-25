@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -40,8 +41,13 @@ public class SecurityConfig {
                 .anonymous(anonymous -> anonymous.principal("testuser"))  // Allow anonymous access with test user
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         } else {
-            http.securityContext(context -> context.securityContextRepository(securityContextRepository))
-                //  .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+           http
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .securityContext(context -> context.securityContextRepository(securityContextRepository))
+                .sessionManagement(session -> session
+                    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
                     .requestMatchers("/", "/auth/**").permitAll() 
@@ -51,6 +57,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/events").permitAll()
                     .requestMatchers(HttpMethod.GET, "/events/*").permitAll()
+                    .requestMatchers("/uploads/**").permitAll()  
+                    .requestMatchers("/events/*/chat/**").permitAll()   
                     .anyRequest().authenticated() 
                 );
         }

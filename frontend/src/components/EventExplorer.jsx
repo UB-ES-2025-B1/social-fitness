@@ -228,9 +228,6 @@ function EventChatModal({ event, onClose }) {
             <span className="chat-sidebar-count">
               {participantsCount}/{capacity} participantes
             </span>
-            <p className="chat-sidebar-help">
-              implementar a partir del backend?
-            </p>
           </aside>
 
           {/* DERECHA: Chat */}
