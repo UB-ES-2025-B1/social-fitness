@@ -1,8 +1,11 @@
 package com.example.backend.controller;
 
 import com.example.backend.model.Event;
+import com.example.backend.model.User;
 import com.example.backend.service.EventService;
+import com.example.backend.service.AuthService;
 import com.example.backend.repository.EventRepository;
+import com.example.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +41,21 @@ class EventsControllerTest {
   EventService service;
 
   @MockBean
-  EventRepository repo; // injected in controller constructor
+  EventRepository repo;
+
+  @MockBean
+  UserRepository userRepository;
+
+  @MockBean
+  AuthService authService;
 
   @Test
   void join_returns200_withMessage() throws Exception {
-    doNothing().when(service).join(1L);
-
+    User mockUser = new User();
+    mockUser.setId(1L);
+    when(authService.getCurrentAuthenticatedUser()).thenReturn(mockUser);
+    
+    doNothing().when(service).join(any(Long.class), any(Long.class));
     mvc.perform(post("/events/1/join")
         .with(csrf()))
       .andExpect(status().isOk())
@@ -52,8 +64,11 @@ class EventsControllerTest {
 
   @Test
   void leave_returns200_whenOk() throws Exception {
-    doNothing().when(service).leave(2L);
-
+    User mockUser = new User();
+    mockUser.setId(2L);
+    when(authService.getCurrentAuthenticatedUser()).thenReturn(mockUser);
+    
+    doNothing().when(service).leave(any(Long.class), any(Long.class));
     mvc.perform(post("/events/2/leave")
         .with(csrf()))
       .andExpect(status().isOk())
@@ -62,8 +77,11 @@ class EventsControllerTest {
 
   @Test
   void leave_returns400_whenIllegalState() throws Exception {
-    doThrow(new IllegalStateException("Not a participant")).when(service).leave(3L);
-
+    User mockUser = new User();
+    mockUser.setId(3L);
+    when(authService.getCurrentAuthenticatedUser()).thenReturn(mockUser);
+    
+    doThrow(new IllegalStateException("Not a participant")).when(service).leave(any(Long.class), any(Long.class));
     mvc.perform(post("/events/3/leave")
         .with(csrf()))
       .andExpect(status().isBadRequest())
@@ -72,6 +90,10 @@ class EventsControllerTest {
 
   @Test
   void create_returns201_whenValid() throws Exception {
+    User mockUser = new User();
+    mockUser.setId(4L);
+    when(authService.getCurrentAuthenticatedUser()).thenReturn(mockUser);
+    
     Event in = new Event();
     in.setTitle("Match");
     in.setSport("football");
@@ -82,11 +104,18 @@ class EventsControllerTest {
     in.setCapacity(10);
     in.setPrice(BigDecimal.ZERO);
 
-    Event saved = in;
+    Event saved = new Event();
     saved.setId(123L);
+    saved.setTitle(in.getTitle());
+    saved.setSport(in.getSport());
+    saved.setDate(in.getDate());
+    saved.setTime(in.getTime());
+    saved.setLocation(in.getLocation());
+    saved.setOrganizer(in.getOrganizer());
+    saved.setCapacity(in.getCapacity());
+    saved.setPrice(in.getPrice());
 
-    when(service.create(any())).thenReturn(saved);
-
+    when(service.create(any(Event.class), any(Long.class))).thenReturn(saved);
     String json = mapper.writeValueAsString(in);
 
     mvc.perform(post("/events")

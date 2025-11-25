@@ -6,12 +6,12 @@ console.log('[API] API_BASE =', API_BASE);
 
 async function request(path, { method = 'GET', body, headers = {}, credentials = 'include' } = {}) {
   const url = API_BASE + path
-  console.log(`[API] ${method} ->`, url); 
+  console.log(`[API] ${method} ->`, url);
 
-  const userId = localStorage.getItem('userId');
-  if (userId && !path.startsWith('/auth/')) {
-    headers['User-ID'] = userId; // Añadimos la cabecera que espera el backend
-  }
+  //const userId = localStorage.getItem('userId');
+  //if (userId && !path.startsWith('/auth/')) {
+    //headers['User-ID'] = userId; // Añadimos la cabecera que espera el backend
+  //}
 
   const opts = {
     method,
