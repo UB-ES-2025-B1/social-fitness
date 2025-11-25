@@ -110,4 +110,36 @@ public class CommonSteps extends CucumberSpringConfiguration {
         assertTrue(actualStatus == statusCode1 || actualStatus == statusCode2,
             "Expected status code " + statusCode1 + " or " + statusCode2 + " but got " + actualStatus);
     }
+
+    @Given("I am an authenticated user")
+    public void iAmAnAuthenticatedUser() {
+        // Create and authenticate a test user
+        String testUsername = "testuser_" + System.currentTimeMillis();
+        String testEmail = testUsername + "@example.com";
+        String testPassword = "TestPass123";
+        
+        // Register the user
+        Map<String, Object> registerData = new HashMap<>();
+        registerData.put("username", testUsername);
+        registerData.put("email", testEmail);
+        registerData.put("password", testPassword);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Map<String, Object>> registerRequest = new HttpEntity<>(registerData, headers);
+        
+        restTemplate.postForEntity("/auth/register", registerRequest, String.class);
+        
+        // Login to get the auth token
+        Map<String, Object> loginData = new HashMap<>();
+        loginData.put("username", testUsername);
+        loginData.put("password", testPassword);
+        
+        HttpEntity<Map<String, Object>> loginRequest = new HttpEntity<>(loginData, headers);
+        ResponseEntity<Map> loginResponse = restTemplate.postForEntity("/auth/login", loginRequest, Map.class);
+        
+        if (loginResponse.getBody() != null && loginResponse.getBody().containsKey("token")) {
+            this.authToken = (String) loginResponse.getBody().get("token");
+        }
+    }
 }
