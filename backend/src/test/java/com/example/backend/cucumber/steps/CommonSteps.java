@@ -4,6 +4,7 @@ import com.example.backend.cucumber.CucumberSpringConfiguration;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.Given;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
