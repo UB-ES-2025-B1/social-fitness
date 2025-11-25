@@ -33,7 +33,7 @@ public class ProfilePhotoSteps extends CucumberSpringConfiguration {
         headers.setContentType(MediaType.APPLICATION_JSON);
         
         HttpEntity<Map<String, String>> request = new HttpEntity<>(photoData, headers);
-        ResponseEntity<Map> uploadResponse = restTemplate.postForEntity("/profile/update-photo", request, Map.class);
+        ResponseEntity<Map> uploadResponse = restTemplate.postForEntity(getBaseUrl() + "/profile/update-photo", request, Map.class);
         
         if (uploadResponse.getStatusCode().is2xxSuccessful() && uploadResponse.getBody() != null) {
             uploadedPhotoUrl = (String) uploadResponse.getBody().get("profilePictureUrl");
@@ -49,12 +49,12 @@ public class ProfilePhotoSteps extends CucumberSpringConfiguration {
         headers.setContentType(MediaType.APPLICATION_JSON);
         
         HttpEntity<Map<String, String>> request = new HttpEntity<>(photoData, headers);
-        response = restTemplate.postForEntity("/profile/update-photo", request, Map.class);
+        response = restTemplate.postForEntity(getBaseUrl() + "/profile/update-photo", request, Map.class);
     }
 
     @When("I request my profile information")
     public void iRequestMyProfileInformation() {
-        response = restTemplate.getForEntity("/profile/me", Map.class);
+        response = restTemplate.getForEntity(getBaseUrl() + "/profile/me", Map.class);
     }
 
     @Then("the photo should be saved successfully")

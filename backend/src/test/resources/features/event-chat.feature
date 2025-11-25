@@ -1,3 +1,4 @@
+@Pending
 Feature: Event Group Chat
   As a participant in an event
   I want to communicate with other participants

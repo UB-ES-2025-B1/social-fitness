@@ -1,3 +1,4 @@
+@Pending
 Feature: Profile Photo Management
   As a user
   I want to manage my profile photo

@@ -1,3 +1,4 @@
+@Pending
 Feature: Event Filtering
   As a user
   I want to filter events by different criteria

@@ -43,13 +43,13 @@ public class ChatSteps extends CucumberSpringConfiguration {
         headers.setContentType(MediaType.APPLICATION_JSON);
         
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(eventData, headers);
-        ResponseEntity<Map> createResponse = restTemplate.postForEntity("/events", request, Map.class);
+        ResponseEntity<Map> createResponse = restTemplate.postForEntity(getBaseUrl() + "/events", request, Map.class);
         
         if (createResponse.getStatusCode() == HttpStatus.CREATED && createResponse.getBody() != null) {
             currentEventId = ((Number) createResponse.getBody().get("id")).longValue();
             
             // Join the event
-            restTemplate.postForEntity("/events/" + currentEventId + "/join", new HttpEntity<>(headers), Map.class);
+            restTemplate.postForEntity(getBaseUrl() + "/events/" + currentEventId + "/join", new HttpEntity<>(headers), Map.class);
         }
     }
 
@@ -66,7 +66,7 @@ public class ChatSteps extends CucumberSpringConfiguration {
             messageData.put("content", msg);
             
             HttpEntity<Map<String, String>> request = new HttpEntity<>(messageData, headers);
-            restTemplate.postForEntity("/events/" + currentEventId + "/chat/messages", request, Map.class);
+            restTemplate.postForEntity(getBaseUrl() + "/events/" + currentEventId + "/chat/messages", request, Map.class);
         }
     }
 
@@ -86,7 +86,7 @@ public class ChatSteps extends CucumberSpringConfiguration {
         headers.setContentType(MediaType.APPLICATION_JSON);
         
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(eventData, headers);
-        ResponseEntity<Map> createResponse = restTemplate.postForEntity("/events", request, Map.class);
+        ResponseEntity<Map> createResponse = restTemplate.postForEntity(getBaseUrl() + "/events", request, Map.class);
         
         if (createResponse.getStatusCode() == HttpStatus.CREATED && createResponse.getBody() != null) {
             nonJoinedEventId = ((Number) createResponse.getBody().get("id")).longValue();
@@ -103,7 +103,7 @@ public class ChatSteps extends CucumberSpringConfiguration {
         headers.setContentType(MediaType.APPLICATION_JSON);
         
         HttpEntity<Map<String, String>> request = new HttpEntity<>(messageData, headers);
-        restTemplate.postForEntity("/events/" + currentEventId + "/chat/messages", request, Map.class);
+        restTemplate.postForEntity(getBaseUrl() + "/events/" + currentEventId + "/chat/messages", request, Map.class);
     }
 
     @When("I send a message to the event chat")
@@ -116,12 +116,12 @@ public class ChatSteps extends CucumberSpringConfiguration {
         headers.setContentType(MediaType.APPLICATION_JSON);
         
         HttpEntity<Map<String, String>> request = new HttpEntity<>(messageData, headers);
-        response = restTemplate.postForEntity("/events/" + currentEventId + "/chat/messages", request, Map.class);
+        response = restTemplate.postForEntity(getBaseUrl() + "/events/" + currentEventId + "/chat/messages", request, Map.class);
     }
 
     @When("I request all chat messages for the event")
     public void iRequestAllChatMessagesForTheEvent() {
-        response = restTemplate.getForEntity("/events/" + currentEventId + "/chat/messages", List.class);
+        response = restTemplate.getForEntity(getBaseUrl() + "/events/" + currentEventId + "/chat/messages", List.class);
     }
 
     @When("I attempt to send a message to that event chat")
@@ -133,7 +133,7 @@ public class ChatSteps extends CucumberSpringConfiguration {
         headers.setContentType(MediaType.APPLICATION_JSON);
         
         HttpEntity<Map<String, String>> request = new HttpEntity<>(messageData, headers);
-        response = restTemplate.postForEntity("/events/" + nonJoinedEventId + "/chat/messages", request, Map.class);
+        response = restTemplate.postForEntity(getBaseUrl() + "/events/" + nonJoinedEventId + "/chat/messages", request, Map.class);
     }
 
     @When("I log out and log back in")
@@ -144,7 +144,7 @@ public class ChatSteps extends CucumberSpringConfiguration {
 
     @When("I request the chat messages")
     public void iRequestTheChatMessages() {
-        response = restTemplate.getForEntity("/events/" + currentEventId + "/chat/messages", List.class);
+        response = restTemplate.getForEntity(getBaseUrl() + "/events/" + currentEventId + "/chat/messages", List.class);
     }
 
     @Then("the message should be saved successfully")

@@ -42,13 +42,13 @@ public class FilterSteps extends CucumberSpringConfiguration {
         
         for (Map<String, Object> eventData : events) {
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(eventData, headers);
-            restTemplate.postForEntity("/events", request, Map.class);
+            restTemplate.postForEntity(getBaseUrl() + "/events", request, Map.class);
         }
     }
 
     @When("I request events filtered by sport {string}")
     public void iRequestEventsFilteredBySport(String sport) {
-        String url = UriComponentsBuilder.fromPath("/events")
+        String url = UriComponentsBuilder.fromHttpUrl(getBaseUrl() + "/events")
             .queryParam("sport", sport)
             .toUriString();
         
@@ -57,7 +57,7 @@ public class FilterSteps extends CucumberSpringConfiguration {
 
     @When("I request events filtered by location {string}")
     public void iRequestEventsFilteredByLocation(String location) {
-        String url = UriComponentsBuilder.fromPath("/events")
+        String url = UriComponentsBuilder.fromHttpUrl(getBaseUrl() + "/events")
             .queryParam("location", location)
             .toUriString();
         
@@ -66,7 +66,7 @@ public class FilterSteps extends CucumberSpringConfiguration {
 
     @When("I request events between {string} and {string}")
     public void iRequestEventsBetweenAnd(String startTime, String endTime) {
-        String url = UriComponentsBuilder.fromPath("/events")
+        String url = UriComponentsBuilder.fromHttpUrl(getBaseUrl() + "/events")
             .queryParam("timeStart", startTime)
             .queryParam("timeEnd", endTime)
             .toUriString();
@@ -78,7 +78,7 @@ public class FilterSteps extends CucumberSpringConfiguration {
     public void iRequestEventsWith(DataTable dataTable) {
         Map<String, String> filters = dataTable.asMap(String.class, String.class);
         
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/events");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(getBaseUrl() + "/events");
         
         filters.forEach((key, value) -> {
             if (value != null && !value.isEmpty()) {
