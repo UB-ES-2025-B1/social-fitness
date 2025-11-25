@@ -28,20 +28,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
-
+        
         boolean isTestProfile = java.util.Arrays.asList(environment.getActiveProfiles()).contains("test");
-
+        
         http
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults()); // activar CORS
-
+            
         // For test profile, permit all requests
         if (isTestProfile) {
             http
                 .anonymous(anonymous -> anonymous.principal("testuser"))  // Allow anonymous access with test user
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         } else {
-            http
+           http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .securityContext(context -> context.securityContextRepository(securityContextRepository))
@@ -49,10 +49,17 @@ public class SecurityConfig {
                     .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/", "/auth/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
-                    .anyRequest().authenticated()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
+                    .requestMatchers("/", "/auth/**").permitAll() 
+                    .requestMatchers("/profile", "/profile/**").permitAll()
+                    .requestMatchers("/sports/**").permitAll()
+                    .requestMatchers("/actuator/**").permitAll() // healthchecks allowed
+                    .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/events").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/events/*").permitAll()
+                    .requestMatchers("/uploads/**").permitAll()  
+                    .requestMatchers("/events/*/chat/**").permitAll()   
+                    .anyRequest().authenticated() 
                 );
         }
         return http.build();
@@ -65,7 +72,7 @@ public class SecurityConfig {
     public org.springframework.security.authentication.dao.DaoAuthenticationProvider authenticationProvider(
         UserDetailsService userDetailsService, PasswordEncoder passwordEncoder
     ) {
-        org.springframework.security.authentication.dao.DaoAuthenticationProvider authProvider =
+        org.springframework.security.authentication.dao.DaoAuthenticationProvider authProvider = 
             new org.springframework.security.authentication.dao.DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
