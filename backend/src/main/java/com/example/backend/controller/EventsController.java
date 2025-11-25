@@ -7,11 +7,11 @@ import com.example.backend.service.EventService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;          
-import java.util.List;            
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;  
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -24,7 +24,7 @@ public class EventsController {
   public EventsController(EventService service, com.example.backend.service.AuthService authService/*, EventRepository repo*/) {
     this.service = service;
     this.authService = authService;
-     
+
   }
 
   @GetMapping
