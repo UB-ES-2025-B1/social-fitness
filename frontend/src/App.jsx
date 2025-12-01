@@ -9,14 +9,17 @@ import EventExplorer from './components/EventExplorer'
 import TopBar from './components/TopBar'
 import Profile from './components/Profile'
 import CreateEvent from './components/CreateEvent'
+import DirectMessages from './components/DirectMessages'
+import UserSearch from './components/UserSearch'
+import PrivateChat from './components/PrivateChat'
 import * as profileService from './services/profile'
 
 function App() {
   // Dev shortcut: add ?dev=profile or ?dev=explore in the URL to open a view directly during development
   const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
   const devParam = urlParams ? urlParams.get('dev') : null
-  const startMode = devParam === 'profile' || devParam === 'explore' || devParam === 'create' ? devParam : 'login'
-  const [mode, setMode] = useState(startMode) // one of: 'login' | 'register' | 'profile' | 'explore'
+  const startMode = devParam === 'profile' || devParam === 'explore' || devParam === 'create' || devParam === 'messages' ? devParam : 'login'
+  const [mode, setMode] = useState(startMode) // one of: 'login' | 'register' | 'profile' | 'explore' | 'create' | 'messages' | 'messages-search' | 'messages-chat'
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [userId, setUserId] = useState(null)
@@ -25,6 +28,7 @@ function App() {
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
+  const [selectedChatUser, setSelectedChatUser] = useState(null)
 
   function validateLogin() {
     const errs = {}
@@ -121,8 +125,8 @@ function App() {
               <p className="subtitle">{mode === 'login' ? 'Inicia sesión para continuar en Social Fitness' : 'Crea una nueva cuenta'}</p>
             </>
           )}
-          {(mode === 'explore' || mode === 'profile' || mode === 'create') && (
-            <TopBar mode={mode} onChange={(m) => { setMode(m); setErrors({}); setMessage('') }} />
+          {(mode === 'explore' || mode === 'profile' || mode === 'create' || mode === 'messages' || mode === 'messages-search' || mode === 'messages-chat') && (
+            <TopBar mode={mode === 'messages-search' || mode === 'messages-chat' ? 'messages' : mode} onChange={(m) => { setMode(m); setErrors({}); setMessage('') }} />
           )}
 
           {mode === 'profile-config' ? (
@@ -145,6 +149,30 @@ function App() {
             <Profile />
           ) : mode === 'create' ? (
             <CreateEvent onCreated={(data) => { setMessage('Evento creado'); setMode('explore') }} />
+          ) : mode === 'messages' ? (
+            <DirectMessages 
+              onSelectChat={(user) => {
+                setSelectedChatUser(user)
+                setMode('messages-chat')
+              }}
+              onNewChat={() => setMode('messages-search')}
+            />
+          ) : mode === 'messages-search' ? (
+            <UserSearch 
+              onSelectUser={(user) => {
+                setSelectedChatUser(user)
+                setMode('messages-chat')
+              }}
+              onBack={() => setMode('messages')}
+            />
+          ) : mode === 'messages-chat' ? (
+            <PrivateChat 
+              user={selectedChatUser}
+              onBack={() => {
+                setSelectedChatUser(null)
+                setMode('messages')
+              }}
+            />
           ) : mode === 'explore' ? (
             <EventExplorer />
           ) : mode === 'login' ? (
