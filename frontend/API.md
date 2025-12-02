@@ -333,3 +333,192 @@ Returns profile information from a user.
   "sports": "[{\"id\":\"football\",\"level\":\"beginner\"},{\"id\":\"tennis\",\"level\":\"advanced\"}]",
   "bio":null
 }
+
+```
+
+## Direct Messages endpoints
+
+#### 14) GET /messages/chats
+
+Description: Returns all existing direct message conversations for the authenticated user, ordered by most recent activity.
+
+**Auth:** requires an authenticated user
+
+**Request body:** none
+
+**Successful response (200 OK):**
+
+```json
+[
+  {
+    "id": "string",
+    "otherUser": {
+      "id": "string",
+      "username": "string",
+      "profileImage": "string|null"
+    },
+    "lastMessage": {
+      "text": "string",
+      "timestamp": "ISO 8601 string",
+      "senderId": "string"
+    },
+    "unreadCount": number
+  }
+]
+```
+
+**Error responses:**
+- 401: `{ "message": "Authentication required" }`
+
+**Notes:**
+- Chats are sorted by `lastMessage.timestamp` descending (most recent first)
+- `unreadCount` represents messages not yet seen by the authenticated user
+- If no conversations exist, returns empty array `[]`
+
+---
+
+#### 15) GET /messages/users/search
+
+Description: Search for users by username to initiate a new direct message conversation.
+
+**Auth:** requires an authenticated user
+
+**Query parameters:**
+- `q`: string — username search query (required, min 1 character)
+
+**Successful response (200 OK):**
+
+```json
+[
+  {
+    "id": "string",
+    "username": "string",
+    "profileImage": "string|null"
+  }
+]
+```
+
+**Error responses:**
+- 400: `{ "message": "Query parameter 'q' is required" }`
+- 401: `{ "message": "Authentication required" }`
+
+**Notes:**
+- Search is case-insensitive and matches usernames containing the query string
+- Maximum 20 results returned
+- The authenticated user is excluded from results
+- Returns empty array if no matches found
+
+---
+
+#### 16) GET /messages/users/:userId
+
+Description: Returns the direct message history between the authenticated user and the specified user.
+
+**Auth:** requires an authenticated user
+
+**Request body:** none
+
+**Successful response (200 OK):**
+
+```json
+[
+  {
+    "id": "string",
+    "senderId": "string",
+    "senderUsername": "string",
+    "receiverId": "string",
+    "text": "string",
+    "timestamp": "ISO 8601 string",
+    "read": boolean
+  }
+]
+```
+
+**Error responses:**
+- 401: `{ "message": "Authentication required" }`
+- 404: `{ "message": "User not found" }`
+
+**Notes:**
+- Messages are ordered by timestamp ascending (oldest first)
+- Returns empty array if no conversation exists yet
+- Calling this endpoint marks all received messages as read
+
+---
+
+#### 17) POST /messages/users/:userId
+
+Description: Sends a direct message to the specified user.
+
+**Auth:** requires an authenticated user
+
+**Request JSON body:**
+
+```json
+{
+  "text": "string"
+}
+```
+
+**Successful response (201 Created):**
+
+```json
+{
+  "id": "string",
+  "senderId": "string",
+  "senderUsername": "string",
+  "receiverId": "string",
+  "text": "string",
+  "timestamp": "ISO 8601 string",
+  "read": false,
+  "message": "Message sent"
+}
+```
+
+**Error responses:**
+- 400: `{ "message": "Validation failed", "errors": { "text": "Message cannot be empty" } }`
+- 401: `{ "message": "Authentication required" }`
+- 404: `{ "message": "User not found" }`
+
+**Notes:**
+- `text` must be non-empty and trimmed
+- Cannot send messages to yourself (returns 400)
+- Creates a new conversation if one doesn't exist
+
+---
+
+#### 18) WS /messages/ws (optional, recommended)
+
+Description: WebSocket channel for real-time direct message updates.
+
+**Auth:** requires an authenticated user (via cookie or token)
+
+**Behavior:**
+
+When connected and a new message is sent to the user, the server sends:
+
+```json
+{
+  "type": "dm",
+  "data": {
+    "id": "string",
+    "senderId": "string",
+    "senderUsername": "string",
+    "receiverId": "string",
+    "text": "string",
+    "timestamp": "ISO 8601 string",
+    "read": false
+  }
+}
+```
+
+**Error messages (WebSocket protocol):**
+
+```json
+{ "type": "error", "message": "Authentication required" }
+```
+
+**Backend implementation notes:**
+- Direct messages should be stored in a persistent database
+- Maintain a `DirectMessage` entity/table with fields: id, senderId, receiverId, text, timestamp, read
+- Index on senderId and receiverId for efficient queries
+- WebSocket implementation is optional but recommended for real-time updates
