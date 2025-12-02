@@ -12,7 +12,7 @@ Feature: Event Management API
       | title     | Morning Run  |
       | sport     | Running      |
       | location  | Central Park |
-      | date      | 2025-12-01   |
+      | date      | 2026-12-01   |
       | time      | 08:00        |
       | organizer | testuser     |
       | capacity  | 10           |
