@@ -26,8 +26,9 @@ describe('LoginForm', () => {
       screen.getByLabelText(/nombre de usuario/i),
       'devtest'
     )
+    // Use placeholder to target password input specifically (not the toggle button)
     await userEvent.type(
-      screen.getByLabelText(/contraseña|password/i),
+      screen.getByPlaceholderText(/Introduce tu contraseña/i),
       'devtest123'
     )
 
