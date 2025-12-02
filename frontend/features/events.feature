@@ -11,7 +11,7 @@ Feature: Event Management
       | title       | Morning Run         |
       | sport       | Running             |
       | location    | Central Park        |
-      | date        | 2025-12-01          |
+      | date        | 2026-12-01          |
       | capacity    | 10                  |
     Then the event should be created successfully
     And I should see the event in my events list
