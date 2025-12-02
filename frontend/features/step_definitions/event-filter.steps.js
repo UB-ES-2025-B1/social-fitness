@@ -4,11 +4,11 @@ import assert from 'assert';
 Given('there are multiple events with different sports, locations, days, and times', async function () {
   // Create a variety of test events
   const testEvents = [
-    { title: 'Morning Tennis', sport: 'Tennis', location: 'Central Park', date: '2025-12-01', time: '09:00', capacity: 10 },
-    { title: 'Yoga Downtown', sport: 'Yoga', location: 'Downtown Studio', date: '2025-12-02', time: '10:30', capacity: 15 },
-    { title: 'Basketball Game', sport: 'Basketball', location: 'Sports Center', date: '2025-12-03', time: '18:00', capacity: 12 },
-    { title: 'Evening Tennis', sport: 'Tennis', location: 'West Court', date: '2025-12-01', time: '19:00', capacity: 8 },
-    { title: 'Saturday Yoga', sport: 'Yoga', location: 'Downtown Studio', date: '2025-12-06', time: '11:00', capacity: 20 },
+    { title: 'Morning Tennis', sport: 'Tennis', location: 'Central Park', date: '2026-12-01', time: '09:00', capacity: 10 },
+    { title: 'Yoga Downtown', sport: 'Yoga', location: 'Downtown Studio', date: '2026-12-02', time: '10:30', capacity: 15 },
+    { title: 'Basketball Game', sport: 'Basketball', location: 'Sports Center', date: '2026-12-03', time: '18:00', capacity: 12 },
+    { title: 'Evening Tennis', sport: 'Tennis', location: 'West Court', date: '2026-12-01', time: '19:00', capacity: 8 },
+    { title: 'Saturday Yoga', sport: 'Yoga', location: 'Downtown Studio', date: '2026-12-06', time: '11:00', capacity: 20 },
   ];
   
   this.allEvents = [];
