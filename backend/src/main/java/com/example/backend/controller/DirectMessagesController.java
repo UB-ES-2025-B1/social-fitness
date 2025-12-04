@@ -6,6 +6,7 @@ import com.example.backend.service.AuthService;
 import com.example.backend.service.DirectMessageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.backend.repository.UserRepository;
 
 import java.util.*;
 
@@ -15,10 +16,12 @@ public class DirectMessagesController {
 
     private final DirectMessageService service;
     private final AuthService auth;
+    private final UserRepository userRepository;
 
     public DirectMessagesController(DirectMessageService service, AuthService auth) {
         this.service = service;
         this.auth = auth;
+        this.userRepository = null;
     }
 
     @GetMapping("/users/{userId}")
@@ -140,6 +143,34 @@ public class DirectMessagesController {
             return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
         }
     }
+
+    @GetMapping("/users/search")
+    public ResponseEntity<?> searchUsers(@RequestParam String q) {
+        try {
+            User me = auth.getCurrentAuthenticatedUser();
+
+            if (q == null || q.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Query parameter 'q' is required"));
+            }
+
+            List<User> results = userRepository.findByUsernameContainingIgnoreCase(q);
+
+            return ResponseEntity.ok(
+                    results.stream()
+                            .filter(u -> !u.getId().equals(me.getId()))
+                            .map(u -> Map.of(
+                                    "id", u.getId(),
+                                    "username", u.getUsername(),
+                                    "profileImage", u.getProfileImage()
+                            ))
+                            .toList()
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
+        }
+    }
+
 
 
 }
