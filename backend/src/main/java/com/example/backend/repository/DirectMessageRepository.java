@@ -12,5 +12,5 @@ public interface DirectMessageRepository extends JpaRepository<DirectMessage, St
             Long receiverId2, Long senderId2
     );
 
-    List<DirectMessage> findTop1BySenderIdOrReceiverIdOrderByTimestampDesc(Long senderId, Long receiverId);
+    List<DirectMessage> findBySenderIdOrReceiverIdOrderByTimestampDesc(Long senderId, Long receiverId);
 }

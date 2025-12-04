@@ -22,6 +22,12 @@ public class DirectMessageService {
         this.userRepo = userRepo;
     }
 
+    public List<DirectMessage> getAllMessagesOfUser(Long userId) {
+    // Devuelve todos los mensajes donde userId es sender o receiver
+    return repo.findBySenderIdOrReceiverIdOrderByTimestampDesc(userId, userId);
+}
+
+
     private User getUser(Long id) {
         return userRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));

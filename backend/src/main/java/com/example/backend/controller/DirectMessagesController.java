@@ -84,4 +84,62 @@ public class DirectMessagesController {
         }
     }
 
+    @GetMapping("/chats")
+    public ResponseEntity<?> getChats() {
+        try {
+            User me = auth.getCurrentAuthenticatedUser();
+
+            // obtener todos los mensajes donde yo soy sender o receiver
+            List<DirectMessage> msgs = service.getAllMessagesOfUser(me.getId());
+
+            // agrupar por otro usuario
+            Map<Long, List<DirectMessage>> grouped = new HashMap<>();
+
+            for (DirectMessage m : msgs) {
+                Long other = m.getSender().getId().equals(me.getId())
+                        ? m.getReceiver().getId()
+                        : m.getSender().getId();
+
+                grouped.computeIfAbsent(other, k -> new ArrayList<>()).add(m);
+            }
+
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (var entry : grouped.entrySet()) {
+                List<DirectMessage> conv = entry.getValue();
+                conv.sort(Comparator.comparing(DirectMessage::getTimestamp).reversed());
+
+                DirectMessage last = conv.get(0);
+                long unread = conv.stream()
+                        .filter(m -> !m.isRead() && m.getReceiver().getId().equals(me.getId()))
+                        .count();
+
+                User other = last.getSender().getId().equals(me.getId())
+                        ? last.getReceiver()
+                        : last.getSender();
+
+                result.add(Map.of(
+                        "id", "chat-" + me.getId() + "-" + other.getId(),
+                        "otherUser", Map.of(
+                                "id", other.getId(),
+                                "username", other.getUsername(),
+                                "profileImage", other.getProfileImage()
+                        ),
+                        "lastMessage", Map.of(
+                                "text", last.getText(),
+                                "timestamp", last.getTimestamp().toString(),
+                                "senderId", last.getSender().getId()
+                        ),
+                        "unreadCount", unread
+                ));
+            }
+
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
+        }
+    }
+
+
 }
