@@ -75,9 +75,14 @@ function App() {
           if (res.data && res.data.errors) {
             setErrors(res.data.errors)
           } else if (res.data && res.data.message) {
-            setErrors({ general: res.data.message })
+            // Translate common backend error messages to Spanish
+            let errorMessage = res.data.message
+            if (errorMessage === 'Invalid credentials') {
+              errorMessage = 'Usuario o contraseña incorrectos. Por favor, verifica tus datos.'
+            }
+            setErrors({ general: errorMessage })
           } else {
-            setErrors({ general: `Request failed (${res.status})` })
+            setErrors({ general: `Fallo en la solicitud (${res.status})` })
           }
         } else {
           if (mode === 'register') {
@@ -108,7 +113,7 @@ function App() {
           setConfirm('')
         }
       } catch (err) {
-        setErrors({ general: 'Network error — please try again' })
+        setErrors({ general: 'Error de red — por favor, intenta de nuevo' })
       } finally {
         setSubmitting(false)
       }
