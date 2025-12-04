@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import './components/auth.css'
 import LoginForm from './components/LoginForm'
@@ -32,6 +32,38 @@ function App() {
   const [message, setMessage] = useState('')
   const [selectedChatUser, setSelectedChatUser] = useState(null)
   const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread notifications count when user is logged in
+  useEffect(() => {
+    if (mode !== 'login' && mode !== 'register' && mode !== 'profile-config') {
+      fetchUnreadCount()
+      // Poll for new notifications every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [mode])
+
+  async function fetchUnreadCount() {
+    try {
+      const res = await notificationService.getUnreadCount()
+      if (res.ok && res.data) {
+        setUnreadCount(res.data.count || 0)
+      }
+    } catch (err) {
+      // Silently fail - don't disrupt the UI
+      console.error('Error fetching unread count:', err)
+    }
+  }
+
+  function handleNotificationNavigate(targetMode, params = {}) {
+    setMode(targetMode)
+    if (targetMode === 'messages-chat' && params.userId) {
+      // Set selected chat user for private chat
+      setSelectedChatUser({ id: params.userId })
+    }
+    // Refresh unread count after navigation
+    fetchUnreadCount()
+  }
 
   function validateLogin() {
     const errs = {}
@@ -78,14 +110,9 @@ function App() {
           if (res.data && res.data.errors) {
             setErrors(res.data.errors)
           } else if (res.data && res.data.message) {
-            // Translate common backend error messages to Spanish
-            let errorMessage = res.data.message
-            if (errorMessage === 'Invalid credentials') {
-              errorMessage = 'Usuario o contraseña incorrectos. Por favor, verifica tus datos.'
-            }
-            setErrors({ general: errorMessage })
+            setErrors({ general: res.data.message })
           } else {
-            setErrors({ general: `Fallo en la solicitud (${res.status})` })
+            setErrors({ general: `Request failed (${res.status})` })
           }
         } else {
           if (mode === 'register') {
@@ -116,7 +143,7 @@ function App() {
           setConfirm('')
         }
       } catch (err) {
-        setErrors({ general: 'Error de red — por favor, intenta de nuevo' })
+        setErrors({ general: 'Network error — please try again' })
       } finally {
         setSubmitting(false)
       }
@@ -134,7 +161,11 @@ function App() {
             </>
           )}
           {(mode === 'explore' || mode === 'profile' || mode === 'create' || mode === 'messages' || mode === 'messages-search' || mode === 'messages-chat' || mode === 'notifications') && (
-            <TopBar mode={mode === 'messages-search' || mode === 'messages-chat' ? 'messages' : mode} onChange={(m) => { setMode(m); setErrors({}); setMessage('') }} unreadCount={unreadCount} />
+            <TopBar 
+              mode={mode === 'messages-search' || mode === 'messages-chat' ? 'messages' : mode} 
+              onChange={(m) => { setMode(m); setErrors({}); setMessage(''); if (m === 'notifications') fetchUnreadCount(); }} 
+              unreadCount={unreadCount}
+            />
           )}
 
           {mode === 'profile-config' ? (
@@ -156,7 +187,7 @@ function App() {
           ) : mode === 'profile' ? (
             <Profile />
           ) : mode === 'notifications' ? (
-            <Notifications onNavigate={(targetMode) => setMode(targetMode)} />
+            <Notifications onNavigate={handleNotificationNavigate} />
           ) : mode === 'create' ? (
             <CreateEvent onCreated={(data) => { setMessage('Evento creado'); setMode('explore') }} />
           ) : mode === 'messages' ? (
