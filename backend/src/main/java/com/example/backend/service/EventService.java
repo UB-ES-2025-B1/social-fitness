@@ -23,11 +23,12 @@ public class EventService {
     private final EventRepository repo;
     private final UserRepository userRepo;
  //   private final AuthService authService;
-
-    public EventService(EventRepository repo, UserRepository userRepo/*, AuthService authService*/) {
+    private final NotificationService notificationService;
+    
+    public EventService(EventRepository repo, UserRepository userRepo, NotificationService notificationService) {
         this.repo = repo;
         this.userRepo = userRepo;
- //       this.authService = authService;
+        this.notificationService = notificationService;
     }
 
     private User getUserById(Long userId) {
@@ -140,6 +141,19 @@ public class EventService {
         }
         e.addParticipant(currentUser);
         repo.save(e);
+
+        // lanzar notificaciones
+        notificationService.notifyJoinedEvent(userId, id, e.getTitle());
+
+        // Notificar al organizador de nuevo participante
+        try {
+            User organizer = userRepo.findByUsername(e.getOrganizer()).orElse(null);
+            if (organizer != null && !organizer.getId().equals(userId)) {
+                notificationService.notifyNewParticipant(organizer.getId(), id, e.getTitle(), userId);
+            }
+        } catch (Exception ex) {
+            // ignore si no encuentra organizador
+        }
     }
 
     @Transactional
