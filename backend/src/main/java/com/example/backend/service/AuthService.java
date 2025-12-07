@@ -79,28 +79,62 @@ public UserResponse login(LoginRequest req) {
       throw new ValidationException(Map.of("general", "Invalid credentials"));
     }
   }
-
-  public User getCurrentAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+   public UserResponse getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found: " + username));
         
-        // Comprobar si es un usuario anónimo o no autenticado
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new UsernameNotFoundException("No user is currently authenticated");
-        }
-        
-        // Obtener el nombre de usuario
-        String username;
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString(); // Fallback
-        }
-        
-        // Buscar en la BBDD
-        return userRepository.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found in repository"));
+        return new UserResponse(
+            user.getId().toString(),
+            user.getUsername(),
+            user.getEmail()
+        );
     }
+    public User getCurrentAuthenticatedUser() {
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      
+      //  LOGS DE DEPURACIÓN
+      System.out.println("🔵 [getCurrentAuthenticatedUser] Authentication: " + authentication);
+      if (authentication != null) {
+          System.out.println("🔵 [getCurrentAuthenticatedUser] Principal class: " + authentication.getPrincipal().getClass().getName());
+          System.out.println("🔵 [getCurrentAuthenticatedUser] Principal value: " + authentication.getPrincipal());
+          System.out.println("🔵 [getCurrentAuthenticatedUser] Is authenticated: " + authentication.isAuthenticated());
+      }
+      
+      // Comprobar si es un usuario anónimo o no autenticado
+      if (authentication == null || !authentication.isAuthenticated()) {
+          throw new UsernameNotFoundException("No user is currently authenticated");
+      }
+      
+      Object principal = authentication.getPrincipal();
+      
+      
+      if (principal instanceof String && "anonymousUser".equals(principal)) {
+          throw new UsernameNotFoundException("Anonymous user detected");
+      }
+      
+       
+      if (principal instanceof User) {
+          System.out.println("🔵 [getCurrentAuthenticatedUser] Principal is User instance");
+          return (User) principal;
+      }
+      
+      
+      String username;
+      if (principal instanceof UserDetails) {
+          username = ((UserDetails) principal).getUsername();
+          System.out.println("🔵 [getCurrentAuthenticatedUser] Principal is UserDetails, username: " + username);
+      } else {
+          username = principal.toString();
+          System.out.println("🔵 [getCurrentAuthenticatedUser] Principal is toString: " + username);
+      }
+      
+      // Buscar en la BBDD
+      User user = userRepository.findByUsername(username)
+          .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found in repository"));
+      
+      System.out.println("🔵 [getCurrentAuthenticatedUser] User found: " + user.getUsername() + " (ID: " + user.getId() + ")");
+      return user;
+  }
 
   // Excepción de validación simple para mapear a 400 con { message, errors }
   public static class ValidationException extends RuntimeException {

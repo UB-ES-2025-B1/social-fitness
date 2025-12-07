@@ -18,10 +18,10 @@ public class DirectMessagesController {
     private final AuthService auth;
     private final UserRepository userRepository;
 
-    public DirectMessagesController(DirectMessageService service, AuthService auth) {
+    public DirectMessagesController(DirectMessageService service, AuthService auth, UserRepository userRepository) {
         this.service = service;
         this.auth = auth;
-        this.userRepository = null;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/users/{userId}")
@@ -50,6 +50,8 @@ public class DirectMessagesController {
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body(Map.of("message", "User not found"));
         } catch (Exception e) {
+            System.err.println("🔴 [GET /messages/users/" + userId + "] ERROR: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
         }
     }
@@ -83,6 +85,8 @@ public class DirectMessagesController {
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body(Map.of("message", "User not found"));
         } catch (Exception e) {
+            System.err.println("🔴 [POST /messages/users/" + userId + "] ERROR: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
         }
     }
@@ -90,10 +94,14 @@ public class DirectMessagesController {
     @GetMapping("/chats")
     public ResponseEntity<?> getChats() {
         try {
+            System.out.println("🔵 [GET /chats] Starting...");
+            
             User me = auth.getCurrentAuthenticatedUser();
+            System.out.println("🔵 [GET /chats] User: " + me.getUsername() + " (ID: " + me.getId() + ")");
 
             // obtener todos los mensajes donde yo soy sender o receiver
             List<DirectMessage> msgs = service.getAllMessagesOfUser(me.getId());
+            System.out.println("🔵 [GET /chats] Found " + msgs.size() + " messages");
 
             // agrupar por otro usuario
             Map<Long, List<DirectMessage>> grouped = new HashMap<>();
@@ -105,41 +113,52 @@ public class DirectMessagesController {
 
                 grouped.computeIfAbsent(other, k -> new ArrayList<>()).add(m);
             }
+            
+            System.out.println("🔵 [GET /chats] Grouped into " + grouped.size() + " conversations");
 
             List<Map<String, Object>> result = new ArrayList<>();
 
             for (var entry : grouped.entrySet()) {
-                List<DirectMessage> conv = entry.getValue();
-                conv.sort(Comparator.comparing(DirectMessage::getTimestamp).reversed());
+                try {
+                    List<DirectMessage> conv = entry.getValue();
+                    conv.sort(Comparator.comparing(DirectMessage::getTimestamp).reversed());
 
-                DirectMessage last = conv.get(0);
-                long unread = conv.stream()
-                        .filter(m -> !m.isRead() && m.getReceiver().getId().equals(me.getId()))
-                        .count();
+                    DirectMessage last = conv.get(0);
+                    long unread = conv.stream()
+                            .filter(m -> !m.isRead() && m.getReceiver().getId().equals(me.getId()))
+                            .count();
 
-                User other = last.getSender().getId().equals(me.getId())
-                        ? last.getReceiver()
-                        : last.getSender();
+                    User other = last.getSender().getId().equals(me.getId())
+                            ? last.getReceiver()
+                            : last.getSender();
 
-                result.add(Map.of(
-                        "id", "chat-" + me.getId() + "-" + other.getId(),
-                        "otherUser", Map.of(
-                                "id", other.getId(),
-                                "username", other.getUsername(),
-                                "profileImage", other.getProfileImage()
-                        ),
-                        "lastMessage", Map.of(
-                                "text", last.getText(),
-                                "timestamp", last.getTimestamp().toString(),
-                                "senderId", last.getSender().getId()
-                        ),
-                        "unreadCount", unread
-                ));
+                    result.add(Map.of(
+                            "id", "chat-" + me.getId() + "-" + other.getId(),
+                            "otherUser", Map.of(
+                                    "id", other.getId(),
+                                    "username", other.getUsername(),
+                                    "profileImage", other.getProfileImage() != null ? other.getProfileImage() : "" 
+                            ),
+                            "lastMessage", Map.of(
+                                    "text", last.getText(),
+                                    "timestamp", last.getTimestamp().toString(),
+                                    "senderId", last.getSender().getId()
+                            ),
+                            "unreadCount", unread
+                    ));
+                } catch (Exception ex) {
+                    System.err.println("🔴 [GET /chats] Error processing conversation with user " + entry.getKey() + ": " + ex.getMessage());
+                    ex.printStackTrace();
+                }
             }
+            
+            System.out.println("🔵 [GET /chats] Returning " + result.size() + " chats");
 
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {
+            System.err.println("🔴 [GET /chats] ERROR: " + e.getClass().getName() + " - " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
         }
     }
@@ -147,13 +166,17 @@ public class DirectMessagesController {
     @GetMapping("/users/search")
     public ResponseEntity<?> searchUsers(@RequestParam String q) {
         try {
+            System.out.println("🔵 [GET /users/search] Query: " + q);
+            
             User me = auth.getCurrentAuthenticatedUser();
+            System.out.println("🔵 [GET /users/search] User: " + me.getUsername());
 
             if (q == null || q.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Query parameter 'q' is required"));
             }
 
             List<User> results = userRepository.findByUsernameContainingIgnoreCase(q);
+            System.out.println("🔵 [GET /users/search] Found " + results.size() + " users");
 
             return ResponseEntity.ok(
                     results.stream()
@@ -161,16 +184,15 @@ public class DirectMessagesController {
                             .map(u -> Map.of(
                                     "id", u.getId(),
                                     "username", u.getUsername(),
-                                    "profileImage", u.getProfileImage()
+                                    "profileImage", u.getProfileImage() != null ? u.getProfileImage() : "" // ✅ NULL-SAFE
                             ))
                             .toList()
             );
 
         } catch (Exception e) {
+            System.err.println("🔴 [GET /users/search] ERROR: " + e.getClass().getName() + " - " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
         }
     }
-
-
-
 }

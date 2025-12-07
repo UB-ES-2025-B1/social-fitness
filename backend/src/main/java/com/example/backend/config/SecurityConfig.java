@@ -17,7 +17,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import com.example.backend.repository.UserRepository;
+import org.springframework.web.filter.OncePerRequestFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @Configuration
 public class SecurityConfig {
@@ -26,44 +33,80 @@ public class SecurityConfig {
     private Environment environment;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
-        
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
+
+        @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, SecurityContextRepository scr) throws Exception {
         boolean isTestProfile = java.util.Arrays.asList(environment.getActiveProfiles()).contains("test");
         
         http
             .csrf(csrf -> csrf.disable())
-            .cors(Customizer.withDefaults()); // activar CORS
+            .cors(Customizer.withDefaults())
+            .securityContext(context -> context.securityContextRepository(scr));
+        
+        
+        if (!isTestProfile) {
+            http.addFilterAfter(new OncePerRequestFilter() {
+                @Override
+                protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) 
+                        throws java.io.IOException, jakarta.servlet.ServletException {
+                    
+                    HttpSession session = request.getSession(false);
+                    String sessionId = session != null ? session.getId() : "NO SESSION";
+                    
+                    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                    String authInfo = auth != null ? auth.getName() + " (" + auth.isAuthenticated() + ")" : "NULL";
+                    
+                    System.out.println("🟢 [FILTER] " + request.getMethod() + " " + request.getRequestURI() + 
+                                     " | Session: " + sessionId + " | Auth: " + authInfo);
+                    
+                    // Ver si la sesión tiene el contexto guardado
+                    if (session != null) {
+                        Object ctx = session.getAttribute("SPRING_SECURITY_CONTEXT");
+                        System.out.println("🟢 [FILTER] Context in session: " + (ctx != null ? "YES" : "NO"));
+                    }
+                    
+                    filterChain.doFilter(request, response);
+                }
+            }, org.springframework.security.web.context.SecurityContextHolderFilter.class); 
+        }
             
-        // For test profile, permit all requests
         if (isTestProfile) {
             http
-                .anonymous(anonymous -> anonymous.principal("testuser"))  // Allow anonymous access with test user
+                .anonymous(anonymous -> anonymous.principal("testuser"))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         } else {
-           http
-                .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
-                .securityContext(context -> context.securityContextRepository(securityContextRepository))
+            http
                 .sessionManagement(session -> session
                     .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/", "/auth/**").permitAll() 
                     .requestMatchers("/profile", "/profile/**").permitAll()
                     .requestMatchers("/sports/**").permitAll()
-                    .requestMatchers("/actuator/**").permitAll() // healthchecks allowed
+                    .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/events").permitAll()
                     .requestMatchers(HttpMethod.GET, "/events/*").permitAll()
                     .requestMatchers("/uploads/**").permitAll()  
-                    .requestMatchers("/events/*/chat/**").permitAll()   
+                    .requestMatchers("/events/*/chat/**").authenticated()
+                    .requestMatchers("/messages/**").authenticated()
                     .anyRequest().authenticated() 
                 );
         }
         return http.build();
-    }    @Bean
+    }
+
+     
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
@@ -79,12 +122,6 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(
-        AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
 
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
