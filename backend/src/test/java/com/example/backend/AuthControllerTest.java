@@ -17,8 +17,12 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.context.annotation.Import;
+import com.example.backend.config.SecurityConfig;
+import com.example.backend.repository.UserRepository;
 
 @WebMvcTest(AuthController.class)
+@Import(SecurityConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
@@ -28,6 +32,9 @@ class AuthControllerTest {
   @MockBean
   AuthService authService;
 
+  @MockBean
+  UserRepository userRepository;
+  
   @Test
   void register_shouldReturn201_whenPayloadValid() throws Exception {
     // stub the service to avoid DB dependencies
