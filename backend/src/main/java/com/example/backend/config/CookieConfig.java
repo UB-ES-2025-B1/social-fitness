@@ -10,6 +10,6 @@ public class CookieConfig {
 
     @Bean
     public CookieSameSiteSupplier applicationCookieSameSiteSupplier() {
-        return CookieSameSiteSupplier.ofLax().whenHasName("JSESSIONID");
+        return CookieSameSiteSupplier.ofNone().whenHasName("JSESSIONID");
     }
 }
