@@ -57,13 +57,19 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/events").permitAll()
                     .requestMatchers(HttpMethod.GET, "/events/*").permitAll()
+                    .requestMatchers("/events/**").permitAll()
                     .requestMatchers("/uploads/**").permitAll()  
                     .requestMatchers("/events/*/chat/**").permitAll()   
+                    .requestMatchers("/messages/ws/","/notifications/ws").permitAll() // WebSocket will check auth internally
                     .anyRequest().authenticated() 
+                )
+                .sessionManagement(session -> session
+                    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 );
         }
         return http.build();
-    }    @Bean
+    }   
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
