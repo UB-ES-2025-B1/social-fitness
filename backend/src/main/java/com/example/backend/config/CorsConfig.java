@@ -13,7 +13,7 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    @Value("${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}")
+    @Value("${ALLOWED_ORIGINS:http://localhost:5173, https://social-fitness-develop.netlify.app/, https://social-fitness-preprod.netlify.app/, https://social-fitness.netlify.app/}") //
     private String allowedOrigins;
 
     @Bean
