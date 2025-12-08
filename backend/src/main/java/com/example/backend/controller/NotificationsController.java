@@ -22,24 +22,36 @@ public class NotificationsController {
         this.authService = authService;
     }
 
+    private ResponseEntity<Map<String, String>> unauthorized() {
+        return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
+    }
+
     @GetMapping
-    public ResponseEntity<List<NotificationDTO>> getNotifications() {
-        User user = authService.getCurrentAuthenticatedUser();
-        List<NotificationDTO> notifications = notificationService.getNotifications(user.getId());
-        return ResponseEntity.ok(notifications);
+    public ResponseEntity<?> getNotifications() {
+        try {
+            User user = authService.getCurrentAuthenticatedUser();
+            List<NotificationDTO> notifications = notificationService.getNotifications(user.getId());
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            return unauthorized();
+        }
     }
 
     @GetMapping("/unread-count")
-    public ResponseEntity<Map<String, Long>> getUnreadCount() {
-        User user = authService.getCurrentAuthenticatedUser();
-        Long count = notificationService.getUnreadCount(user.getId());
-        return ResponseEntity.ok(Map.of("count", count));
+    public ResponseEntity<?> getUnreadCount() {
+        try {
+            User user = authService.getCurrentAuthenticatedUser();
+            Long count = notificationService.getUnreadCount(user.getId());
+            return ResponseEntity.ok(Map.of("count", count));
+        } catch (Exception e) {
+            return unauthorized();
+        }
     }
 
     @PutMapping("/{id}/read")
-    public ResponseEntity<Map<String, String>> markAsRead(@PathVariable Long id) {
-        User user = authService.getCurrentAuthenticatedUser();
+    public ResponseEntity<?> markAsRead(@PathVariable Long id) {
         try {
+            User user = authService.getCurrentAuthenticatedUser();
             notificationService.markAsRead(id, user.getId());
             return ResponseEntity.ok(Map.of("message", "Notification marked as read"));
         } catch (IllegalAccessException e) {
@@ -50,19 +62,23 @@ public class NotificationsController {
     }
 
     @PutMapping("/read-all")
-    public ResponseEntity<Map<String, Object>> markAllAsRead() {
-        User user = authService.getCurrentAuthenticatedUser();
-        long count = notificationService.markAllAsRead(user.getId());
-        return ResponseEntity.ok(Map.of(
-            "message", "All notifications marked as read",
-            "count", count
-        ));
+    public ResponseEntity<?> markAllAsRead() {
+        try {
+            User user = authService.getCurrentAuthenticatedUser();
+            long count = notificationService.markAllAsRead(user.getId());
+            return ResponseEntity.ok(Map.of(
+                "message", "All notifications marked as read",
+                "count", count
+            ));
+        } catch (Exception e) {
+            return unauthorized();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deleteNotification(@PathVariable Long id) {
-        User user = authService.getCurrentAuthenticatedUser();
+    public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
         try {
+            User user = authService.getCurrentAuthenticatedUser();
             notificationService.deleteNotification(id, user.getId());
             return ResponseEntity.ok(Map.of("message", "Notification deleted"));
         } catch (IllegalAccessException e) {
