@@ -155,11 +155,12 @@ Validation expectations (backend)
     "location": "string",
     "description": "string",
     "organizer": { "id": "", "name": "" },
-    "participants": [ { "id": "", "name": "" } ],
+    "participants": [ { "id": "", "name": "", "profileImage": "string|null" } ],
     "capacity": 22,
     "price": 5,
     "image": "url"
   }
+- Notes: Each participant object includes `id` (user ID), `name` (username), and `profileImage` (URL or null if user has no profile picture set)
 
 6) POST /events/:id/join
 - Description: Joins the event as the authenticated user (cookie or token, as described above).
