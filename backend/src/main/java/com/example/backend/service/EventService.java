@@ -106,6 +106,7 @@ public class EventService {
                 Map<String, Object> userMap = new LinkedHashMap<>();
                 userMap.put("id", user.getId().toString());
                 userMap.put("name", user.getUsername());
+                userMap.put("profileImage", user.getProfileImage());
                 return userMap;
             }).collect(Collectors.toList());
 

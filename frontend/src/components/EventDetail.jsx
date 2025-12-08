@@ -1,11 +1,59 @@
-import React from "react"
-import EventChat from "./EventChat" // ya lo tienes creado
+import React, { useState, useEffect } from "react"
+import EventChat from "./EventChat"
+import { getEvent } from "../services/events"
+
+const DEFAULT_AVATAR = '/img/user-profile-icon-profile.png'
 
 export default function EventChatModal({ event, onClose }) {
+  const [eventDetails, setEventDetails] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  // Fetch full event details including participants
+  useEffect(() => {
+    if (!event?.id) return
+
+    let cancelled = false
+
+    async function fetchEventDetails() {
+      try {
+        const res = await getEvent(event.id)
+        if (!cancelled && res.ok && res.data) {
+          setEventDetails(res.data)
+        }
+      } catch (err) {
+        console.error('Error fetching event details:', err)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    fetchEventDetails()
+    return () => { cancelled = true }
+  }, [event?.id])
+
+  // Listen for participant changes (join/leave events)
+  useEffect(() => {
+    function handleParticipantChange(e) {
+      const detail = e?.detail
+      if (!detail || String(detail.id) !== String(event?.id)) return
+
+      // Refetch event details when someone joins or leaves
+      getEvent(event.id).then(res => {
+        if (res.ok && res.data) {
+          setEventDetails(res.data)
+        }
+      }).catch(console.error)
+    }
+
+    window.addEventListener('joinedEventsChanged', handleParticipantChange)
+    return () => window.removeEventListener('joinedEventsChanged', handleParticipantChange)
+  }, [event?.id])
+
   if (!event) return null
 
-  const participantsCount = Number(event.participants) || 0
-  const capacity = Number(event.capacity) || 0
+  const participants = eventDetails?.participants || []
+  const participantsCount = Array.isArray(participants) ? participants.length : (Number(event.participants) || 0)
+  const capacity = Number(eventDetails?.capacity || event.capacity) || 0
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -32,8 +80,25 @@ export default function EventChatModal({ event, onClose }) {
 
             <div style={{ marginTop: 16 }}>
               <h4>Participantes</h4>
-              {/* Cuando tengáis backend de participantes lo rellenáis aquí */}
-              <p className="muted">(Listado de participantes pendiente de backend)</p>
+              {loading ? (
+                <p className="muted">Cargando participantes...</p>
+              ) : participants.length === 0 ? (
+                <p className="muted">No hay participantes todavía</p>
+              ) : (
+                <div className="participants-list">
+                  {participants.map((participant) => (
+                    <div key={participant.id} className="participant-item">
+                      <img 
+                        src={participant.profileImage || DEFAULT_AVATAR} 
+                        alt={participant.name}
+                        className="participant-avatar"
+                        onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR }}
+                      />
+                      <span className="participant-name">{participant.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
