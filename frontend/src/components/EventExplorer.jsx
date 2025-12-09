@@ -9,7 +9,9 @@ import { addLocalNotification } from "../services/localNotifications"
 import { getChatMessages, sendChatMessage, checkParticipant } from "../services/chat"
 import ChatMessage from "./ChatMessage"
 import ChatInput from "./ChatInput"
+import { getEvent } from "../services/events"
 
+const DEFAULT_AVATAR = '/img/user-profile-icon-profile.png'
 const DEV_USE_SAMPLE = (import.meta.env.VITE_API_BASE || "") === ""
 
 const SAMPLE_EVENTS = [
@@ -87,6 +89,7 @@ function EventChatModal({ event, onClose }) {
   const [messages, setMessages] = useState([])
   const [hasAccess, setHasAccess] = useState(false)
   const [loadingChat, setLoadingChat] = useState(true)
+  const [eventDetails, setEventDetails] = useState(null)
   const scrollRef = useRef(null)
 
   const userId = localStorage.getItem("userId")
@@ -118,6 +121,45 @@ function EventChatModal({ event, onClose }) {
     const cached = loadFromStorage(event.id)
     if (cached.length > 0) setMessages(cached)
   }, [event.id])
+
+  // Fetch full event details including participants
+  useEffect(() => {
+    if (!event?.id) return
+
+    let cancelled = false
+
+    async function fetchEventDetails() {
+      try {
+        const res = await getEvent(event.id)
+        if (!cancelled && res.ok && res.data) {
+          setEventDetails(res.data)
+        }
+      } catch (err) {
+        console.error('Error fetching event details:', err)
+      }
+    }
+
+    fetchEventDetails()
+    return () => { cancelled = true }
+  }, [event.id])
+
+  // Listen for participant changes (join/leave events)
+  useEffect(() => {
+    function handleParticipantChange(e) {
+      const detail = e?.detail
+      if (!detail || String(detail.id) !== String(event?.id)) return
+
+      // Refetch event details when someone joins or leaves
+      getEvent(event.id).then(res => {
+        if (res.ok && res.data) {
+          setEventDetails(res.data)
+        }
+      }).catch(console.error)
+    }
+
+    window.addEventListener('joinedEventsChanged', handleParticipantChange)
+    return () => window.removeEventListener('joinedEventsChanged', handleParticipantChange)
+  }, [event?.id])
 
   // comprobar acceso
   useEffect(() => {
@@ -200,8 +242,9 @@ function EventChatModal({ event, onClose }) {
     })
   }
 
-  const participantsCount = Number(event.participants) || 0
-  const capacity = Number(event.capacity) || 0
+  const participants = eventDetails?.participants || []
+  const participantsCount = Array.isArray(participants) ? participants.length : (Number(event.participants) || 0)
+  const capacity = Number(eventDetails?.capacity || event.capacity) || 0
 
   return (
     <div className="chat-backdrop">
@@ -229,6 +272,26 @@ function EventChatModal({ event, onClose }) {
             <span className="chat-sidebar-count">
               {participantsCount}/{capacity} participantes
             </span>
+            
+            {/* Lista de participantes */}
+            <div className="participants-list" style={{ marginTop: 16, maxHeight: '400px', overflowY: 'auto' }}>
+              {participants.length === 0 ? (
+                <p className="muted" style={{ fontSize: '0.9rem' }}>Cargando participantes...</p>
+              ) : (
+                participants.map((participant) => (
+                  <div key={participant.id} className="participant-item" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <img 
+                      src={participant.profileImage || DEFAULT_AVATAR} 
+                      alt={participant.name}
+                      className="participant-avatar"
+                      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+                      onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR }}
+                    />
+                    <span className="participant-name" style={{ fontSize: '0.9rem' }}>{participant.name}</span>
+                  </div>
+                ))
+              )}
+            </div>
           </aside>
 
           {/* DERECHA: Chat */}
