@@ -1,0 +1,157 @@
+/* Direct Messages Container */
+.dm-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.dm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dm-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.btn-new-chat {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-new-chat:hover {
+  background: #2563eb;
+}
+
+/* Loading and Error States */
+.dm-loading,
+.dm-error {
+  text-align: center;
+  padding: 32px;
+  color: #6b7280;
+}
+
+.dm-error {
+  color: #dc2626;
+}
+
+/* Empty State */
+.dm-empty {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.dm-empty p {
+  margin: 0 0 16px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* Chat List */
+.dm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dm-chat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.dm-chat-item:hover {
+  background: #f3f4f6;
+}
+
+.dm-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.dm-chat-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dm-chat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dm-username {
+  font-weight: 600;
+  color: #111827;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dm-timestamp {
+  font-size: 12px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.dm-chat-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.dm-last-message {
+  color: #6b7280;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.dm-unread-badge {
+  background: #3b82f6;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 20px;
+  text-align: center;
+}

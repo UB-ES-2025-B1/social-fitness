@@ -1,6 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 export default function RegisterForm({ username, email, password, confirm, errors, onChange, onSubmit, submitting }) {
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  
   return (
     <form onSubmit={onSubmit} noValidate>
       <label className="label">
@@ -31,27 +34,49 @@ export default function RegisterForm({ username, email, password, confirm, error
 
       <label className="label">
         <span className="label-text">Contraseña</span>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => onChange('password', e.target.value)}
-          className={`input ${errors.password ? 'input-error' : ''}`}
-          placeholder="Elige una contraseña"
-          aria-invalid={errors.password ? 'true' : 'false'}
-        />
+        <div style={{ position: 'relative' }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => onChange('password', e.target.value)}
+            className={`input ${errors.password ? 'input-error' : ''}`}
+            placeholder="Elige una contraseña"
+            aria-invalid={errors.password ? 'true' : 'false'}
+            style={{ paddingRight: '2.5rem' }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="password-toggle"
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          >
+            {showPassword ? '👁️' : '👁️‍🗨️'}
+          </button>
+        </div>
         {errors.password && <div className="error">{errors.password}</div>}
       </label>
 
       <label className="label">
         <span className="label-text">Confirmar contraseña</span>
-        <input
-          type="password"
-          value={confirm}
-          onChange={(e) => onChange('confirm', e.target.value)}
-          className={`input ${errors.confirm ? 'input-error' : ''}`}
-          placeholder="Repite tu contraseña"
-          aria-invalid={errors.confirm ? 'true' : 'false'}
-        />
+        <div style={{ position: 'relative' }}>
+          <input
+            type={showConfirm ? "text" : "password"}
+            value={confirm}
+            onChange={(e) => onChange('confirm', e.target.value)}
+            className={`input ${errors.confirm ? 'input-error' : ''}`}
+            placeholder="Repite tu contraseña"
+            aria-invalid={errors.confirm ? 'true' : 'false'}
+            style={{ paddingRight: '2.5rem' }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirm(!showConfirm)}
+            className="password-toggle"
+            aria-label={showConfirm ? "Ocultar contraseña" : "Mostrar contraseña"}
+          >
+            {showConfirm ? '👁️' : '👁️‍🗨️'}
+          </button>
+        </div>
         {errors.confirm && <div className="error">{errors.confirm}</div>}
       </label>
 
