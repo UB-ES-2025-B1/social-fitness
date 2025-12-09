@@ -30,13 +30,13 @@ describe('RegisterForm', () => {
       screen.getByLabelText(/correo electrónico|email/i),
       'devtest@example.com'
     )
-    // 'Contraseña' and 'Confirmar contraseña' are different labels; match exact label to avoid collisions
+    // 'Contraseña' and 'Confirmar contraseña' are different labels; use placeholders to avoid toggle button collision
     await userEvent.type(
-      screen.getByLabelText(/^Contraseña$/i),
+      screen.getByPlaceholderText(/Elige una contraseña/i),
       'devtest123'
     )
     await userEvent.type(
-      screen.getByLabelText(/^(Confirmar contraseña|Repite tu contraseña)$/i),
+      screen.getByPlaceholderText(/Repite tu contraseña/i),
       'devtest123'
     )
 

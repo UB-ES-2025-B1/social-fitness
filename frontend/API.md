@@ -155,11 +155,12 @@ Validation expectations (backend)
     "location": "string",
     "description": "string",
     "organizer": { "id": "", "name": "" },
-    "participants": [ { "id": "", "name": "" } ],
+    "participants": [ { "id": "", "name": "", "profileImage": "string|null" } ],
     "capacity": 22,
     "price": 5,
     "image": "url"
   }
+- Notes: Each participant object includes `id` (user ID), `name` (username), and `profileImage` (URL or null if user has no profile picture set)
 
 6) POST /events/:id/join
 - Description: Joins the event as the authenticated user (cookie or token, as described above).
@@ -333,3 +334,411 @@ Returns profile information from a user.
   "sports": "[{\"id\":\"football\",\"level\":\"beginner\"},{\"id\":\"tennis\",\"level\":\"advanced\"}]",
   "bio":null
 }
+
+```
+
+## Direct Messages endpoints
+
+#### 14) GET /messages/chats
+
+Description: Returns all existing direct message conversations for the authenticated user, ordered by most recent activity.
+
+**Auth:** requires an authenticated user
+
+**Request body:** none
+
+**Successful response (200 OK):**
+
+```json
+[
+  {
+    "id": "string",
+    "otherUser": {
+      "id": "string",
+      "username": "string",
+      "profileImage": "string|null"
+    },
+    "lastMessage": {
+      "text": "string",
+      "timestamp": "ISO 8601 string",
+      "senderId": "string"
+    },
+    "unreadCount": number
+  }
+]
+```
+
+**Error responses:**
+- 401: `{ "message": "Authentication required" }`
+
+**Notes:**
+- Chats are sorted by `lastMessage.timestamp` descending (most recent first)
+- `unreadCount` represents messages not yet seen by the authenticated user
+- If no conversations exist, returns empty array `[]`
+
+---
+
+#### 15) GET /messages/users/search
+
+Description: Search for users by username to initiate a new direct message conversation.
+
+**Auth:** requires an authenticated user
+
+**Query parameters:**
+- `q`: string — username search query (required, min 1 character)
+
+**Successful response (200 OK):**
+
+```json
+[
+  {
+    "id": "string",
+    "username": "string",
+    "profileImage": "string|null"
+  }
+]
+```
+
+**Error responses:**
+- 400: `{ "message": "Query parameter 'q' is required" }`
+- 401: `{ "message": "Authentication required" }`
+
+**Notes:**
+- Search is case-insensitive and matches usernames containing the query string
+- Maximum 20 results returned
+- The authenticated user is excluded from results
+- Returns empty array if no matches found
+
+---
+
+#### 16) GET /messages/users/:userId
+
+Description: Returns the direct message history between the authenticated user and the specified user.
+
+**Auth:** requires an authenticated user
+
+**Request body:** none
+
+**Successful response (200 OK):**
+
+```json
+[
+  {
+    "id": "string",
+    "senderId": "string",
+    "senderUsername": "string",
+    "receiverId": "string",
+    "text": "string",
+    "timestamp": "ISO 8601 string",
+    "read": boolean
+  }
+]
+```
+
+**Error responses:**
+- 401: `{ "message": "Authentication required" }`
+- 404: `{ "message": "User not found" }`
+
+**Notes:**
+- Messages are ordered by timestamp ascending (oldest first)
+- Returns empty array if no conversation exists yet
+- Calling this endpoint marks all received messages as read
+
+---
+
+#### 17) POST /messages/users/:userId
+
+Description: Sends a direct message to the specified user.
+
+**Auth:** requires an authenticated user
+
+**Request JSON body:**
+
+```json
+{
+  "text": "string"
+}
+```
+
+**Successful response (201 Created):**
+
+```json
+{
+  "id": "string",
+  "senderId": "string",
+  "senderUsername": "string",
+  "receiverId": "string",
+  "text": "string",
+  "timestamp": "ISO 8601 string",
+  "read": false,
+  "message": "Message sent"
+}
+```
+
+**Error responses:**
+- 400: `{ "message": "Validation failed", "errors": { "text": "Message cannot be empty" } }`
+- 401: `{ "message": "Authentication required" }`
+- 404: `{ "message": "User not found" }`
+
+**Notes:**
+- `text` must be non-empty and trimmed
+- Cannot send messages to yourself (returns 400)
+- Creates a new conversation if one doesn't exist
+
+---
+
+#### 18) WS /messages/ws (optional, recommended)
+
+Description: WebSocket channel for real-time direct message updates.
+
+**Auth:** requires an authenticated user (via cookie or token)
+
+**Behavior:**
+
+When connected and a new message is sent to the user, the server sends:
+
+```json
+{
+  "type": "dm",
+  "data": {
+    "id": "string",
+    "senderId": "string",
+    "senderUsername": "string",
+    "receiverId": "string",
+    "text": "string",
+    "timestamp": "ISO 8601 string",
+    "read": false
+  }
+}
+```
+
+**Error messages (WebSocket protocol):**
+
+```json
+{ "type": "error", "message": "Authentication required" }
+```
+
+**Backend implementation notes:**
+- Direct messages should be stored in a persistent database
+- Maintain a `DirectMessage` entity/table with fields: id, senderId, receiverId, text, timestamp, read
+- Index on senderId and receiverId for efficient queries
+- WebSocket implementation is optional but recommended for real-time updates
+
+---
+
+## Notifications endpoints
+
+#### 19) GET /notifications
+
+Description: Returns all notifications for the authenticated user, ordered by most recent first.
+
+**Auth:** requires an authenticated user
+
+**Request body:** none
+
+**Successful response (200 OK):**
+
+```json
+[
+  {
+    "id": "string",
+    "type": "EVENT_STARTING|NEW_MESSAGE|JOINED_EVENT|NEW_PARTICIPANT|EVENT_CANCELLED|EVENT_UPDATED",
+    "title": "string",
+    "message": "string",
+    "eventId": "string|null",
+    "relatedUserId": "string|null",
+    "read": boolean,
+    "createdAt": "ISO 8601 string"
+  }
+]
+```
+
+**Error responses:**
+- 401: `{ "message": "Authentication required" }`
+
+**Notes:**
+- Notifications are sorted by `createdAt` descending (most recent first)
+- `eventId` is present for event-related notifications (EVENT_STARTING, JOINED_EVENT, NEW_PARTICIPANT, EVENT_CANCELLED, EVENT_UPDATED)
+- `relatedUserId` is present for user-related notifications (NEW_MESSAGE, NEW_PARTICIPANT)
+- Returns empty array if no notifications exist
+
+**Notification types:**
+- `EVENT_STARTING`: "Tu evento '[Title]' comienza en 1 hora" (sent 1 hour before event start)
+- `NEW_MESSAGE`: "Tienes un nuevo mensaje de [Username]"
+- `JOINED_EVENT`: "Te has unido al evento '[Title]'"
+- `NEW_PARTICIPANT`: "Un nuevo participante se ha unido a tu evento '[Title]'" (for organizers)
+- `EVENT_CANCELLED`: "El evento '[Title]' ha sido cancelado"
+- `EVENT_UPDATED`: "El evento '[Title]' ha sido actualizado"
+
+---
+
+#### 20) GET /notifications/unread-count
+
+Description: Returns the count of unread notifications for the authenticated user.
+
+**Auth:** requires an authenticated user
+
+**Request body:** none
+
+**Successful response (200 OK):**
+
+```json
+{
+  "count": number
+}
+```
+
+**Error responses:**
+- 401: `{ "message": "Authentication required" }`
+
+**Notes:**
+- This endpoint is optimized for quickly fetching the badge count
+- Should be called when the user logs in and periodically to update the badge
+- Returns `{ "count": 0 }` if no unread notifications exist
+
+---
+
+#### 21) PUT /notifications/:id/read
+
+Description: Marks a specific notification as read.
+
+**Auth:** requires an authenticated user
+
+**Request body:** none
+
+**Successful response (200 OK):**
+
+```json
+{
+  "message": "Notification marked as read"
+}
+```
+
+**Error responses:**
+- 401: `{ "message": "Authentication required" }`
+- 403: `{ "message": "Not authorized to access this notification" }`
+- 404: `{ "message": "Notification not found" }`
+
+**Notes:**
+- Only the owner of the notification can mark it as read
+- Calling this endpoint on an already read notification succeeds (idempotent)
+
+---
+
+#### 22) PUT /notifications/read-all
+
+Description: Marks all notifications as read for the authenticated user.
+
+**Auth:** requires an authenticated user
+
+**Request body:** none
+
+**Successful response (200 OK):**
+
+```json
+{
+  "message": "All notifications marked as read",
+  "count": number
+}
+```
+
+**Error responses:**
+- 401: `{ "message": "Authentication required" }`
+
+**Notes:**
+- `count` represents the number of notifications that were updated
+- Returns `{ "count": 0 }` if all notifications were already read
+
+---
+
+#### 23) DELETE /notifications/:id (optional)
+
+Description: Deletes a specific notification.
+
+**Auth:** requires an authenticated user
+
+**Request body:** none
+
+**Successful response (200 OK):**
+
+```json
+{
+  "message": "Notification deleted"
+}
+```
+
+**Error responses:**
+- 401: `{ "message": "Authentication required" }`
+- 403: `{ "message": "Not authorized to delete this notification" }`
+- 404: `{ "message": "Notification not found" }`
+
+**Notes:**
+- Only the owner of the notification can delete it
+- This endpoint is optional; notifications can have a TTL (time to live) instead
+
+---
+
+#### 24) WS /notifications/ws (optional, recommended)
+
+Description: WebSocket channel for real-time notification updates.
+
+**Auth:** requires an authenticated user (via cookie or token)
+
+**Behavior:**
+
+When a new notification is created for the user, the server sends:
+
+```json
+{
+  "type": "notification",
+  "data": {
+    "id": "string",
+    "type": "EVENT_STARTING|NEW_MESSAGE|JOINED_EVENT|NEW_PARTICIPANT|EVENT_CANCELLED|EVENT_UPDATED",
+    "title": "string",
+    "message": "string",
+    "eventId": "string|null",
+    "relatedUserId": "string|null",
+    "read": false,
+    "createdAt": "ISO 8601 string"
+  }
+}
+```
+
+When the unread count changes, the server can optionally send:
+
+```json
+{
+  "type": "unread-count",
+  "data": {
+    "count": number
+  }
+}
+```
+
+**Error messages (WebSocket protocol):**
+
+```json
+{ "type": "error", "message": "Authentication required" }
+```
+
+**Backend implementation notes:**
+- Notifications should be stored in a persistent database
+- Maintain a `Notification` entity/table with fields: id, userId, type, title, message, eventId, relatedUserId, read, createdAt
+- Index on userId and read for efficient unread count queries
+- Index on createdAt for efficient sorting
+- WebSocket implementation is optional but highly recommended for real-time updates
+- Automatic notification generation should occur in:
+  - `EventService.joinEvent()` → create JOINED_EVENT notification for user + NEW_PARTICIPANT notification for organizer
+  - `MessageService.sendMessage()` → create NEW_MESSAGE notification for receiver
+  - Scheduled task (hourly) → check events starting in 1 hour and create EVENT_STARTING notifications
+  - `EventService.cancelEvent()` → create EVENT_CANCELLED notifications for all participants
+  - `EventService.updateEvent()` → create EVENT_UPDATED notifications for all participants
+
+**Frontend integration notes:**
+- Add a bell icon (🔔) to the TopBar component, positioned to the right of "Explorar Eventos"
+- Display a badge with the unread count when count > 0
+- On click, open a notifications view/modal showing all notifications
+- Each notification should be clickable and navigate to the relevant resource (event detail or message chat)
+- Implement "Mark all as read" button
+- Use relative timestamps (e.g., "hace 5 minutos", "hace 1 hora", "hace 2 días")
+- Visually distinguish unread notifications (e.g., bold text or highlighted background)

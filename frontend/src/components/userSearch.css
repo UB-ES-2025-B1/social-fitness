@@ -1,0 +1,154 @@
+/* User Search Container */
+.user-search-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.user-search-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.btn-back:hover {
+  background: #f3f4f6;
+}
+
+.user-search-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Search Form */
+.user-search-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.user-search-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.user-search-input:focus {
+  border-color: #3b82f6;
+}
+
+.btn-search {
+  padding: 10px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-search:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.btn-search:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Error and Empty States */
+.user-search-error {
+  padding: 12px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.user-search-empty {
+  text-align: center;
+  padding: 32px;
+  color: #6b7280;
+}
+
+.user-search-empty p {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* Results */
+.user-search-results {
+  margin-top: 16px;
+}
+
+.user-search-results-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.user-search-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.user-search-item:hover {
+  background: #f3f4f6;
+}
+
+.user-search-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.user-search-username {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111827;
+}

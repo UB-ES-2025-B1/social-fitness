@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 export default function LoginForm({ username, password, errors, onUsernameChange, onPasswordChange, onSubmit, submitting }) {
+  const [showPassword, setShowPassword] = useState(false)
+  
   return (
     <form onSubmit={onSubmit} noValidate>
       <label className="label">
@@ -18,14 +20,25 @@ export default function LoginForm({ username, password, errors, onUsernameChange
 
       <label className="label">
         <span className="label-text">Contraseña</span>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => onPasswordChange(e.target.value)}
-          className={`input ${errors.password ? 'input-error' : ''}`}
-          placeholder="Introduce tu contraseña"
-          aria-invalid={errors.password ? 'true' : 'false'}
-        />
+        <div style={{ position: 'relative' }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => onPasswordChange(e.target.value)}
+            className={`input ${errors.password ? 'input-error' : ''}`}
+            placeholder="Introduce tu contraseña"
+            aria-invalid={errors.password ? 'true' : 'false'}
+            style={{ paddingRight: '2.5rem' }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="password-toggle"
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          >
+            {showPassword ? '👁️' : '👁️‍🗨️'}
+          </button>
+        </div>
         {errors.password && <div className="error">{errors.password}</div>}
       </label>
 
