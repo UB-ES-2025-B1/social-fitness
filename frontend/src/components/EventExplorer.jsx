@@ -3,6 +3,7 @@ import "../components/events.css"
 import "./chat.css"          
 import { listEvents, joinEvent, leaveEvent } from "../services/events"
 import EventFilterModal from "./EventFilterModal"
+import { addLocalNotification } from "../services/localNotifications"
 
 // servicios de chat + componentes de mensaje
 import { getChatMessages, sendChatMessage, checkParticipant } from "../services/chat"
@@ -491,6 +492,17 @@ export default function EventExplorer() {
             next
           )
         )
+        
+        // Add local notification
+        const event = events.find(e => e.id === id)
+        if (event) {
+          addLocalNotification({
+            type: 'JOINED_EVENT',
+            message: `Te has unido al evento "${event.title}"`,
+            eventId: id,
+            eventTitle: event.title
+          })
+        }
       } else {
         setError("No se pudo unir al evento")
       }
@@ -532,6 +544,17 @@ export default function EventExplorer() {
         setChatEvent((prev) =>
           prev && String(prev.id) === String(id) ? null : prev
         )
+        
+        // Add local notification
+        const event = events.find(e => e.id === id)
+        if (event) {
+          addLocalNotification({
+            type: 'LEFT_EVENT',
+            message: `Has salido del evento "${event.title}"`,
+            eventId: id,
+            eventTitle: event.title
+          })
+        }
       } else {
         setError("No se pudo salir del evento")
       }

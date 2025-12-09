@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import * as notificationService from '../services/notifications'
+import * as localNotificationService from '../services/localNotifications'
 import './notifications.css'
 
 export default function Notifications({ onNavigate = () => {} }) {
@@ -9,21 +10,47 @@ export default function Notifications({ onNavigate = () => {} }) {
 
   useEffect(() => {
     loadNotifications()
+    
+    // Listen for local notification updates
+    const handleLocalUpdate = () => {
+      loadNotifications()
+    }
+    
+    window.addEventListener('localNotificationAdded', handleLocalUpdate)
+    window.addEventListener('localNotificationUpdated', handleLocalUpdate)
+    
+    return () => {
+      window.removeEventListener('localNotificationAdded', handleLocalUpdate)
+      window.removeEventListener('localNotificationUpdated', handleLocalUpdate)
+    }
   }, [])
 
   async function loadNotifications() {
     setLoading(true)
     setError('')
     try {
+      // Load backend notifications
       const res = await notificationService.getNotifications()
-      if (res.ok && res.data) {
-        setNotifications(Array.isArray(res.data) ? res.data : [])
-      } else {
-        setError('No se pudieron cargar las notificaciones')
-      }
+      const backendNotifications = (res.ok && res.data && Array.isArray(res.data)) ? res.data : []
+      
+      // Load local notifications
+      const localNotifications = localNotificationService.getLocalNotifications()
+      
+      // Merge and sort by timestamp (newest first)
+      const allNotifications = [...localNotifications, ...backendNotifications]
+        .sort((a, b) => {
+          const timeA = new Date(a.timestamp || a.createdAt).getTime()
+          const timeB = new Date(b.timestamp || b.createdAt).getTime()
+          return timeB - timeA // Newest first
+        })
+      
+      setNotifications(allNotifications)
     } catch (err) {
       console.error('Error loading notifications:', err)
-      setError('Error al cargar notificaciones')
+      // Still load local notifications even if backend fails
+      const localNotifications = localNotificationService.getLocalNotifications()
+      setNotifications(localNotifications)
+      setError('No se pudieron cargar todas las notificaciones')
     } finally {
       setLoading(false)
     }
@@ -31,12 +58,23 @@ export default function Notifications({ onNavigate = () => {} }) {
 
   async function handleMarkAsRead(notificationId) {
     try {
-      const res = await notificationService.markAsRead(notificationId)
-      if (res.ok) {
-        // Update local state
+      // Check if it's a local notification
+      const notification = notifications.find(n => n.id === notificationId)
+      
+      if (notification?.isLocal) {
+        // Handle local notification
+        localNotificationService.markLocalNotificationAsRead(notificationId)
         setNotifications(prev =>
           prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
         )
+      } else {
+        // Handle backend notification
+        const res = await notificationService.markAsRead(notificationId)
+        if (res.ok) {
+          setNotifications(prev =>
+            prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+          )
+        }
       }
     } catch (err) {
       console.error('Error marking notification as read:', err)
@@ -45,22 +83,39 @@ export default function Notifications({ onNavigate = () => {} }) {
 
   async function handleMarkAllAsRead() {
     try {
+      // Mark all backend notifications as read
       const res = await notificationService.markAllAsRead()
       if (res.ok) {
+        // Mark all local notifications as read
+        localNotificationService.markAllLocalNotificationsAsRead()
         // Mark all as read in local state
         setNotifications(prev => prev.map(n => ({ ...n, read: true })))
       }
     } catch (err) {
       console.error('Error marking all as read:', err)
+      // Still mark local notifications as read even if backend fails
+      localNotificationService.markAllLocalNotificationsAsRead()
+      setNotifications(prev => 
+        prev.map(n => n.isLocal ? { ...n, read: true } : n)
+      )
     }
   }
 
   async function handleDelete(notificationId) {
     try {
-      const res = await notificationService.deleteNotification(notificationId)
-      if (res.ok) {
-        // Remove from local state
+      // Check if it's a local notification
+      const notification = notifications.find(n => n.id === notificationId)
+      
+      if (notification?.isLocal) {
+        // Handle local notification
+        localNotificationService.deleteLocalNotification(notificationId)
         setNotifications(prev => prev.filter(n => n.id !== notificationId))
+      } else {
+        // Handle backend notification
+        const res = await notificationService.deleteNotification(notificationId)
+        if (res.ok) {
+          setNotifications(prev => prev.filter(n => n.id !== notificationId))
+        }
       }
     } catch (err) {
       console.error('Error deleting notification:', err)
@@ -91,6 +146,8 @@ export default function Notifications({ onNavigate = () => {} }) {
         return '💬'
       case 'JOINED_EVENT':
         return '✅'
+      case 'LEFT_EVENT':
+        return '👋'
       case 'NEW_PARTICIPANT':
         return '👥'
       case 'EVENT_CANCELLED':
@@ -167,7 +224,7 @@ export default function Notifications({ onNavigate = () => {} }) {
                   {notification.message}
                 </div>
                 <div className="notification-time">
-                  {getRelativeTime(notification.createdAt)}
+                  {getRelativeTime(notification.timestamp || notification.createdAt)}
                 </div>
               </div>
               {!notification.read && (
