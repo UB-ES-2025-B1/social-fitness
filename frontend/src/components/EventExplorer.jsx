@@ -555,17 +555,6 @@ export default function EventExplorer() {
             next
           )
         )
-        
-        // Add local notification
-        const event = events.find(e => e.id === id)
-        if (event) {
-          addLocalNotification({
-            type: 'JOINED_EVENT',
-            message: `Te has unido al evento "${event.title}"`,
-            eventId: id,
-            eventTitle: event.title
-          })
-        }
       } else {
         setError("No se pudo unir al evento")
       }
@@ -608,7 +597,7 @@ export default function EventExplorer() {
           prev && String(prev.id) === String(id) ? null : prev
         )
         
-        // Add local notification
+        // Add local notification for leaving (backend doesn't create these)
         const event = events.find(e => e.id === id)
         if (event) {
           addLocalNotification({
