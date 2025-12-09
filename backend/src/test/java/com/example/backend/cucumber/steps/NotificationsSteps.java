@@ -179,7 +179,7 @@ public class NotificationsSteps extends CucumberSpringConfiguration {
         organizer = user;
     }
 
-    // ✅ NUEVO STEP: Reemplaza el que usaba GET request
+    //   GET request pero modificado para el tests
     @Then("I should have at least {int} notifications stored")
     public void iShouldHaveAtLeastNotificationsStored(int expectedCount) {
         List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(organizer.getId());
