@@ -3,7 +3,10 @@
  * These notifications are stored in localStorage and displayed alongside backend notifications
  */
 
-const LOCAL_NOTIFICATIONS_KEY = 'local_notifications'
+function getStorageKey() {
+  const userId = localStorage.getItem('userId')
+  return `local_notifications:${userId || 'anon'}`
+}
 
 /**
  * Get all local notifications from localStorage
@@ -11,7 +14,7 @@ const LOCAL_NOTIFICATIONS_KEY = 'local_notifications'
  */
 export function getLocalNotifications() {
   try {
-    const stored = localStorage.getItem(LOCAL_NOTIFICATIONS_KEY)
+    const stored = localStorage.getItem(getStorageKey())
     return stored ? JSON.parse(stored) : []
   } catch (err) {
     console.error('Error reading local notifications:', err)
@@ -44,7 +47,7 @@ export function addLocalNotification({ type, message, eventId = null, eventTitle
     // Keep only last 50 local notifications
     const trimmed = notifications.slice(0, 50)
     
-    localStorage.setItem(LOCAL_NOTIFICATIONS_KEY, JSON.stringify(trimmed))
+    localStorage.setItem(getStorageKey(), JSON.stringify(trimmed))
     
     // Dispatch custom event so other components can react
     window.dispatchEvent(new CustomEvent('localNotificationAdded', { 
@@ -68,7 +71,7 @@ export function markLocalNotificationAsRead(notificationId) {
     const updated = notifications.map(n => 
       n.id === notificationId ? { ...n, read: true } : n
     )
-    localStorage.setItem(LOCAL_NOTIFICATIONS_KEY, JSON.stringify(updated))
+    localStorage.setItem(getStorageKey(), JSON.stringify(updated))
     
     window.dispatchEvent(new CustomEvent('localNotificationUpdated'))
   } catch (err) {
@@ -83,7 +86,7 @@ export function markAllLocalNotificationsAsRead() {
   try {
     const notifications = getLocalNotifications()
     const updated = notifications.map(n => ({ ...n, read: true }))
-    localStorage.setItem(LOCAL_NOTIFICATIONS_KEY, JSON.stringify(updated))
+    localStorage.setItem(getStorageKey(), JSON.stringify(updated))
     
     window.dispatchEvent(new CustomEvent('localNotificationUpdated'))
   } catch (err) {
@@ -99,7 +102,7 @@ export function deleteLocalNotification(notificationId) {
   try {
     const notifications = getLocalNotifications()
     const filtered = notifications.filter(n => n.id !== notificationId)
-    localStorage.setItem(LOCAL_NOTIFICATIONS_KEY, JSON.stringify(filtered))
+    localStorage.setItem(getStorageKey(), JSON.stringify(filtered))
     
     window.dispatchEvent(new CustomEvent('localNotificationUpdated'))
   } catch (err) {
@@ -112,7 +115,7 @@ export function deleteLocalNotification(notificationId) {
  */
 export function clearAllLocalNotifications() {
   try {
-    localStorage.removeItem(LOCAL_NOTIFICATIONS_KEY)
+    localStorage.removeItem(getStorageKey())
     window.dispatchEvent(new CustomEvent('localNotificationUpdated'))
   } catch (err) {
     console.error('Error clearing local notifications:', err)
