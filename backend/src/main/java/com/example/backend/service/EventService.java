@@ -284,4 +284,9 @@ public class EventService {
             default -> null;
         };
     }
+
+    public Event findById(Long id) {
+        return repo.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Evento no encontrado con ID: " + id));
+    }
 }
