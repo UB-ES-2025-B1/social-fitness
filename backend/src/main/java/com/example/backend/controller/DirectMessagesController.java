@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.model.DirectMessage;
 import com.example.backend.model.User;
+import com.example.backend.repository.DirectMessageRepository;  
 import com.example.backend.service.AuthService;
 import com.example.backend.service.DirectMessageService;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +18,15 @@ public class DirectMessagesController {
     private final DirectMessageService service;
     private final AuthService auth;
     private final UserRepository userRepository;
+    private final DirectMessageRepository messageRepository; 
 
-    public DirectMessagesController(DirectMessageService service, AuthService auth, UserRepository userRepository) {
+
+    public DirectMessagesController(DirectMessageService service, AuthService auth, UserRepository userRepository,DirectMessageRepository messageRepository) {
         this.service = service;
         this.auth = auth;
         this.userRepository = userRepository;
+        this.messageRepository = messageRepository; 
+
     }
 
     @GetMapping("/users/{userId}")
@@ -191,6 +196,63 @@ public class DirectMessagesController {
 
         } catch (Exception e) {
             System.err.println("🔴 [GET /users/search] ERROR: " + e.getClass().getName() + " - " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
+        }
+    }
+    @PutMapping("/{id}/read")
+    public ResponseEntity<?> markAsRead(@PathVariable String id) {
+        try {
+            User me = auth.getCurrentAuthenticatedUser();
+            Optional<DirectMessage> msgOpt = messageRepository.findById(id);
+            
+            if (msgOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("message", "Message not found"));
+            }
+
+            DirectMessage msg = msgOpt.get();
+            
+            // Verificar que soy el receptor
+            if (!msg.getReceiver().getId().equals(me.getId())) {
+                return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
+            }
+
+            msg.setRead(true);
+            messageRepository.save(msg);
+
+            return ResponseEntity.ok(Map.of("message", "Message marked as read"));
+
+        } catch (Exception e) {
+            System.err.println("🔴 [PUT /messages/" + id + "/read] ERROR: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
+        }
+    }
+
+     
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteMessage(@PathVariable String id) {
+        try {
+            User me = auth.getCurrentAuthenticatedUser();
+            Optional<DirectMessage> msgOpt = messageRepository.findById(id);
+            
+            if (msgOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("message", "Message not found"));
+            }
+
+            DirectMessage msg = msgOpt.get();
+            
+            // Verificar que soy el remitente
+            if (!msg.getSender().getId().equals(me.getId())) {
+                return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
+            }
+
+            messageRepository.delete(msg);
+
+            return ResponseEntity.ok(Map.of("message", "Message deleted"));
+
+        } catch (Exception e) {
+            System.err.println("🔴 [DELETE /messages/" + id + "] ERROR: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
         }
