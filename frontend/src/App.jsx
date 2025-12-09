@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import './components/auth.css'
 import LoginForm from './components/LoginForm'
@@ -15,6 +15,7 @@ import PrivateChat from './components/PrivateChat'
 import Notifications from './components/Notifications'
 import * as profileService from './services/profile'
 import * as notificationService from './services/notifications'
+import * as localNotificationService from './services/localNotifications'
 
 function App() {
   // Dev shortcut: add ?dev=profile or ?dev=explore in the URL to open a view directly during development
@@ -32,6 +33,47 @@ function App() {
   const [message, setMessage] = useState('')
   const [selectedChatUser, setSelectedChatUser] = useState(null)
   const [unreadCount, setUnreadCount] = useState(0)
+
+  // Update unread notification count
+  useEffect(() => {
+    async function fetchUnreadCount() {
+      try {
+        // Get backend unread count
+        const res = await notificationService.getUnreadCount()
+        const backendCount = (res.ok && res.data?.count) ? res.data.count : 0
+        
+        // Get local unread count
+        const localCount = localNotificationService.getUnreadLocalCount()
+        
+        // Set total unread count
+        setUnreadCount(backendCount + localCount)
+      } catch (err) {
+        console.error('Error fetching unread count:', err)
+        // On error, at least show local notifications count
+        const localCount = localNotificationService.getUnreadLocalCount()
+        setUnreadCount(localCount)
+      }
+    }
+
+    fetchUnreadCount()
+    
+    // Refresh unread count when local notifications change
+    const handleLocalUpdate = () => {
+      fetchUnreadCount()
+    }
+    
+    window.addEventListener('localNotificationAdded', handleLocalUpdate)
+    window.addEventListener('localNotificationUpdated', handleLocalUpdate)
+    
+    // Poll for backend notifications every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000)
+    
+    return () => {
+      window.removeEventListener('localNotificationAdded', handleLocalUpdate)
+      window.removeEventListener('localNotificationUpdated', handleLocalUpdate)
+      clearInterval(interval)
+    }
+  }, [])
 
   function validateLogin() {
     const errs = {}
