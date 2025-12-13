@@ -79,7 +79,7 @@ function App() {
     const errs = {}
     if (!username) errs.username = 'Username is required'
     if (!password) errs.password = 'Password is required'
-    else if (password.length < 6) errs.password = 'Password must be at least 6 characters'
+    else if (password.length < 8) errs.password = 'Password must be at least 8 characters'
     return errs
   }
 
@@ -89,7 +89,7 @@ function App() {
     if (!email) errs.email = 'Email is required'
     else if (!/^\S+@\S+\.\S+$/.test(email)) errs.email = 'Enter a valid email'
     if (!password) errs.password = 'Password is required'
-    else if (password.length < 6) errs.password = 'Password must be at least 6 characters'
+    else if (password.length < 8) errs.password = 'Password must be at least 8 characters'
     if (password !== confirm) errs.confirm = 'Passwords do not match'
     return errs
   }
@@ -119,15 +119,17 @@ function App() {
           // The UI shows field errors inline and other errors as a general banner.
           if (res.data && res.data.errors) {
             setErrors(res.data.errors)
-          } else if (res.data && res.data.message) {
-            // Translate common backend error messages to Spanish
-            let errorMessage = res.data.message
+          } else {
+            let errorMessage = res.data?.error
             if (errorMessage === 'Invalid credentials') {
               errorMessage = 'Usuario o contraseña incorrectos. Por favor, verifica tus datos.'
             }
-            setErrors({ general: errorMessage })
-          } else {
-            setErrors({ general: `Fallo en la solicitud (${res.status})` })
+            if (mode === 'login') {
+              setErrors({ password: errorMessage })
+            } else {
+              // En registro, mantener banner general
+              setErrors({ general: errorMessage })
+            }
           }
         } else {
           if (mode === 'register') {
