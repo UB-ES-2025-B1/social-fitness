@@ -3,7 +3,12 @@ postgresql/
 
 # Backend - Maven  
 backend/target/
-backend/.mvn/
+# Note: keep `backend/.mvn/wrapper/maven-wrapper.properties` tracked so `backend/mvnw` works.
+
+# Frontend - Coverage / reports
+frontend/coverage/
+frontend/cucumber-report*.html
+frontend/cucumber-report*.json
 
 #  Uploads de usuarios (avatares)
 backend/uploads/
