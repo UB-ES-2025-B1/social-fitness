@@ -1,5 +1,25 @@
 import React, { useMemo, useState } from 'react'
 
+// Map of sport IDs to Spanish labels
+export const SPORT_LABELS = {
+  football: 'Fútbol',
+  basketball: 'Básquet',
+  tennis: 'Tenis',
+  running: 'Running',
+  swimming: 'Natación',
+  volleyball: 'Volleyball',
+  futbol: 'Fútbol',
+  basquet: 'Básquet',
+  tenis: 'Tenis',
+  natacion: 'Natación',
+}
+
+// Function to translate English sport names to Spanish
+export function translateSport(sportName) {
+  if (!sportName) return sportName
+  const normalized = sportName.toLowerCase().trim()
+  return SPORT_LABELS[normalized] || sportName
+}
 
 const SPORTS = [
   { id: 'football', label: 'Fútbol' },

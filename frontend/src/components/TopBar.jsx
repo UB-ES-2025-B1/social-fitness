@@ -10,6 +10,8 @@ export default function TopBar({ mode = 'explore', onChange = () => {}, unreadCo
         <div className="topbar-tabs" role="tablist" aria-label="Main navigation">
           <button className={`tab ${mode === 'explore' ? 'active' : ''}`} onClick={() => onChange('explore')}>Explorar</button>
           <button className={`tab ${mode === 'create' ? 'active' : ''}`} onClick={() => onChange('create')}>Crear evento</button>
+          <button className={`tab ${mode === 'messages' ? 'active' : ''}`} onClick={() => onChange('messages')}>Mensajes</button>
+          <button className={`tab ${mode === 'profile' ? 'active' : ''}`} onClick={() => onChange('profile')}>Perfil</button>
           <button
             className={`tab notification-bell ${mode === 'notifications' ? 'active' : ''}`}
             onClick={() => onChange('notifications')}
@@ -20,8 +22,6 @@ export default function TopBar({ mode = 'explore', onChange = () => {}, unreadCo
               <span className="notification-badge">{unreadCount}</span>
             )}
           </button>
-          <button className={`tab ${mode === 'messages' ? 'active' : ''}`} onClick={() => onChange('messages')}>Mensajes</button>
-          <button className={`tab ${mode === 'profile' ? 'active' : ''}`} onClick={() => onChange('profile')}>Perfil</button>
         </div>
       </div>
     </div>
