@@ -12,5 +12,8 @@ export default defineConfig({
     setupFiles: './src/setupTests.js',
     globals: true,
     css: true, // permite importar CSS en tests
+    coverage: {
+      reporter: ['text', 'html', 'json-summary', 'lcov'],
+    },
   },
 })
