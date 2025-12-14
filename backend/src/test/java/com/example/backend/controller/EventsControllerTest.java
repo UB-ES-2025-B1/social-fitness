@@ -18,12 +18,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -125,5 +129,63 @@ class EventsControllerTest {
       .andExpect(status().isCreated())
       .andExpect(jsonPath("$.id").value(123))
       .andExpect(jsonPath("$.message").value("Event created"));
+  }
+
+  @Test
+  void list_returns200_andDelegatesToService() throws Exception {
+    when(service.search(any(), any(), any(), any(), any(), any()))
+        .thenReturn(List.of(Map.of("id", "1", "title", "Test")));
+
+    mvc.perform(get("/events?q=test"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value("1"));
+  }
+
+  @Test
+  void detail_returns404_whenEventNotFound() throws Exception {
+    when(service.detail(999L)).thenThrow(new NoSuchElementException("Event not found"));
+
+    mvc.perform(get("/events/999"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.message").value("Event not found"));
+  }
+
+  @Test
+  void join_returns400_whenEventFull() throws Exception {
+    User mockUser = new User();
+    mockUser.setId(1L);
+    when(authService.getCurrentAuthenticatedUser()).thenReturn(mockUser);
+
+    doThrow(new EventService.EventFullException()).when(service).join(1L, 1L);
+
+    mvc.perform(post("/events/1/join").with(csrf()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value("Event full"));
+  }
+
+  @Test
+  void join_returns401_whenNotAuthenticated() throws Exception {
+    when(authService.getCurrentAuthenticatedUser())
+        .thenThrow(new org.springframework.security.core.userdetails.UsernameNotFoundException("no auth"));
+
+    mvc.perform(post("/events/1/join").with(csrf()))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.message").value("Authentication required"));
+  }
+
+  @Test
+  void create_returns400_whenValidationException() throws Exception {
+    when(service.create(any(Event.class), any()))
+        .thenThrow(new EventService.ValidationException(Map.of("title", "Title is required")));
+
+    String json = mapper.writeValueAsString(new Event());
+
+    mvc.perform(post("/events")
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.message").value("Validation failed"))
+      .andExpect(jsonPath("$.errors.title").value("Title is required"));
   }
 }
