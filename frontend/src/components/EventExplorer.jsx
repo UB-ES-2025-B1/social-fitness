@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import "../components/events.css"
 import "./chat.css"          
 import { listEvents, joinEvent, leaveEvent } from "../services/events"
-import EventFilterModal from "./EventFilterModal"
+import EventFilterModal, { translateSport } from "./EventFilterModal"
 import { addLocalNotification } from "../services/localNotifications"
 
 // servicios de chat + componentes de mensaje
@@ -360,7 +360,7 @@ function EventCard({ ev, joined, onJoin, onLeave, onOpenChat }) {
       </div>
       <div className="event-body">
         <div className="event-row">
-          <span className="event-tag">{ev.sport}</span>
+          <span className="event-tag">{translateSport(ev.sport)}</span>
           <span className="event-price">{ev.price ? `${ev.price} €` : ""}</span>
         </div>
         <h3 className="event-title">{ev.title}</h3>
