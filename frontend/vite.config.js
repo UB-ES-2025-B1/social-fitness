@@ -14,6 +14,12 @@ export default defineConfig({
     css: true, // permite importar CSS en tests
     coverage: {
       reporter: ['text', 'html', 'json-summary', 'lcov'],
+      include: ['src/**/*.{js,jsx}'],
+      exclude: [
+        'src/setupTests.js',
+        'src/**/__tests__/**',
+        'src/**/*.test.{js,jsx}',
+      ],
     },
   },
 })
