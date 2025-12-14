@@ -42,22 +42,30 @@ jobs:
           
           if (!summaryPath) process.exit(0)
           if (!fs.existsSync(coverageSummaryPath)) {
-            fs.appendFileSync(summaryPath, '### Frontend coverage\n\nNo se encontro `coverage/coverage-summary.json`.\n')
+            fs.appendFileSync(summaryPath, '### Cobertura Frontend (Vitest)\n\nNo se encontro `coverage/coverage-summary.json`.\n')
             process.exit(0)
           }
           
           const report = JSON.parse(fs.readFileSync(coverageSummaryPath, 'utf8'))
           const total = report.total
-          const row = (label, metric) => `| ${label} | ${metric.covered} | ${metric.total} | ${metric.pct}% |`
+
+          const bar = (pct, width = 12) => {
+            const ratio = Math.max(0, Math.min(1, pct / 100))
+            const filled = Math.round(ratio * width)
+            return '█'.repeat(filled) + '░'.repeat(width - filled)
+          }
+
+          const row = (label, metric) =>
+            `| ${label} | ${metric.pct}% | ${bar(metric.pct)} | ${metric.covered}/${metric.total} |`
           
           const markdown =
-            '### Frontend coverage\n\n' +
-            '| Metrica | Cubierto | Total | % |\n' +
-            '|---|---:|---:|---:|\n' +
+            '### Cobertura Frontend (Vitest)\n\n' +
+            '| Métrica | % | Barra | Cubierto/Total |\n' +
+            '|---|---:|:---:|---:|\n' +
             row('Statements', total.statements) + '\n' +
             row('Branches', total.branches) + '\n' +
             row('Functions', total.functions) + '\n' +
-            row('Lines', total.lines) + '\n'
+            row('Lines', total.lines) + '\n\n'
           
           fs.appendFileSync(summaryPath, markdown)
           NODE
@@ -106,7 +114,7 @@ jobs:
           jacoco_xml = Path("target/site/jacoco/jacoco.xml")
           if not jacoco_xml.exists():
             with open(summary_path, "a", encoding="utf-8") as f:
-              f.write("### Backend coverage (JaCoCo)\\n\\nNo se encontro `target/site/jacoco/jacoco.xml`.\\n")
+              f.write("### Cobertura Backend (JaCoCo)\n\nNo se encontro `target/site/jacoco/jacoco.xml`.\n")
             raise SystemExit(0)
           
           root = ET.parse(jacoco_xml).getroot()
@@ -120,6 +128,11 @@ jobs:
           def pct(covered: int, missed: int) -> float:
             total = covered + missed
             return 0.0 if total == 0 else (covered * 100.0 / total)
+
+          def bar(percent: float, width: int = 12) -> str:
+            ratio = max(0.0, min(1.0, percent / 100.0))
+            filled = int(round(ratio * width))
+            return "█" * filled + "░" * (width - filled)
           
           def row(label: str, key: str) -> str:
             c = counters.get(key)
@@ -128,17 +141,18 @@ jobs:
             covered = c["covered"]
             missed = c["missed"]
             total = covered + missed
-            return f"| {label} | {covered} | {total} | {pct(covered, missed):.1f}% |"
+            percent = pct(covered, missed)
+            return f"| {label} | {percent:.1f}% | {bar(percent)} | {covered}/{total} |"
           
           markdown = (
-            "### Backend coverage (JaCoCo)\\n\\n"
-            "| Metrica | Cubierto | Total | % |\\n"
-            "|---|---:|---:|---:|\\n"
-            + row("Instructions", "INSTRUCTION") + "\\n"
-            + row("Branches", "BRANCH") + "\\n"
-            + row("Lines", "LINE") + "\\n"
-            + row("Methods", "METHOD") + "\\n"
-            + row("Classes", "CLASS") + "\\n"
+            "### Cobertura Backend (JaCoCo)\n\n"
+            "| Métrica | % | Barra | Cubierto/Total |\n"
+            "|---|---:|:---:|---:|\n"
+            + row("Instructions", "INSTRUCTION") + "\n"
+            + row("Branches", "BRANCH") + "\n"
+            + row("Lines", "LINE") + "\n"
+            + row("Methods", "METHOD") + "\n"
+            + row("Classes", "CLASS") + "\n\n"
           )
           
           with open(summary_path, "a", encoding="utf-8") as f:
